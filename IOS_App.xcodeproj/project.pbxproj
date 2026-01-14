@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4267E2BA4FE9188C1B72AF1A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2BB35289DFDF1058FC05C680 /* Localizable.strings */; };
+		FEE95EC62F17A799004FEF66 /* GoogleService-Info 2.plist in Resources */ = {isa = PBXBuildFile; fileRef = FEE95EC52F17A799004FEF66 /* GoogleService-Info 2.plist */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		FE9597092F0B6C40007FF60C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +29,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		34587C760072F8AD66150158 /* es */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = es; path = IOS_App/es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		4EE3A45361459EA0BF165612 /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = IOS_App/de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		95B38E5356C021419CA1B89A /* hi */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = hi; path = IOS_App/hi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A0AB037EB3BDBE588106F34C /* pt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = pt; path = IOS_App/pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C3BF9AB4A769158B268FDF7C /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = IOS_App/en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		CB34F976BA0C467A17454691 /* fr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = fr; path = IOS_App/fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FE9596F92F0B6C3F007FF60C /* IOS_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOS_AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOS_AppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEE95EC52F17A799004FEF66 /* GoogleService-Info 2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info 2.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,10 +87,12 @@
 		FE9596F02F0B6C3F007FF60C = {
 			isa = PBXGroup;
 			children = (
+				FEE95EC52F17A799004FEF66 /* GoogleService-Info 2.plist */,
 				FE9596FB2F0B6C3F007FF60C /* IOS_App */,
 				FE95970B2F0B6C40007FF60C /* IOS_AppTests */,
 				FE9597152F0B6C40007FF60C /* IOS_AppUITests */,
 				FE9596FA2F0B6C3F007FF60C /* Products */,
+				2BB35289DFDF1058FC05C680 /* Localizable.strings */,
 			);
 			sourceTree = "<group>";
 		};
@@ -111,8 +125,6 @@
 				FE9596FB2F0B6C3F007FF60C /* IOS_App */,
 			);
 			name = IOS_App;
-			packageProductDependencies = (
-			);
 			productName = IOS_App;
 			productReference = FE9596F92F0B6C3F007FF60C /* IOS_App.app */;
 			productType = "com.apple.product-type.application";
@@ -134,8 +146,6 @@
 				FE95970B2F0B6C40007FF60C /* IOS_AppTests */,
 			);
 			name = IOS_AppTests;
-			packageProductDependencies = (
-			);
 			productName = IOS_AppTests;
 			productReference = FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,8 +167,6 @@
 				FE9597152F0B6C40007FF60C /* IOS_AppUITests */,
 			);
 			name = IOS_AppUITests;
-			packageProductDependencies = (
-			);
 			productName = IOS_AppUITests;
 			productReference = FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -192,9 +200,17 @@
 			knownRegions = (
 				en,
 				Base,
+				hi,
+				es,
+				fr,
+				de,
+				pt,
 			);
 			mainGroup = FE9596F02F0B6C3F007FF60C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FEE95EC42F17A5F5004FEF66 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = FE9596FA2F0B6C3F007FF60C /* Products */;
 			projectDirPath = "";
@@ -212,6 +228,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4267E2BA4FE9188C1B72AF1A /* Localizable.strings in Resources */,
+				FEE95EC62F17A799004FEF66 /* GoogleService-Info 2.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +285,22 @@
 			targetProxy = FE9597132F0B6C40007FF60C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2BB35289DFDF1058FC05C680 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C3BF9AB4A769158B268FDF7C /* en */,
+				95B38E5356C021419CA1B89A /* hi */,
+				34587C760072F8AD66150158 /* es */,
+				CB34F976BA0C467A17454691 /* fr */,
+				4EE3A45361459EA0BF165612 /* de */,
+				A0AB037EB3BDBE588106F34C /* pt */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		FE95971A2F0B6C40007FF60C /* Debug */ = {
@@ -393,10 +427,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IOS_App/IOS_App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-App-Info.plist";
 				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = co.etherworld.refresh;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = etherworld;\n    CFBundleURLSchemes =     (\n        etherworld\n    );\n}";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -427,10 +463,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IOS_App/IOS_App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-App-Info.plist";
 				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = co.etherworld.refresh;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = etherworld;\n    CFBundleURLSchemes =     (\n        etherworld\n    );\n}";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -576,6 +614,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FEE95EC42F17A5F5004FEF66 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = FE9596F12F0B6C3F007FF60C /* Project object */;
 }

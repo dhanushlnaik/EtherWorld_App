@@ -1,0 +1,60 @@
+"app.name" = "ईथरवर्ल्ड";
+"login.tagline" = "एथेरियम समाचारों से जुड़े रहें";
+"login.apple" = "Apple से जारी रखें";
+"login.google" = "Google से जारी रखें";
+"login.or" = "या";
+"login.email.title" = "ईमेल से साइन इन करें";
+"login.email.placeholder" = "अपना ईमेल दर्ज करें";
+"login.email.note" = "हम आपको साइन इन करने के लिए मैजिक लिंक भेजेंगे";
+"login.newsletter.title" = "साप्ताहिक न्यूज़लेटर (वैकल्पिक)";
+"login.newsletter.subtitle" = "सप्ताह का संक्षिप्त सारांश सीधे आपके इनबॉक्स में।";
+"login.continue" = "जारी रखें";
+"login.footer.text" = "आगे बढ़ते हुए, आप हमारी सहमति देते हैं";
+"login.footer.link" = "सेवा की शर्तें और गोपनीयता नीति";
+"login.success" = "स्वागत है!";
+
+"tab.home" = "होम";
+"tab.search" = "खोज";
+"tab.saved" = "सहेजे गए";
+"tab.profile" = "माय EW";
+
+"settings.title" = "सेटिंग्स";
+"settings.notifications.section" = "सूचनाएँ";
+"settings.notifications.title" = "नई लेख सूचनाएँ";
+"settings.notifications.subtitle" = "जब नए लेख प्रकाशित हों तो सूचित रहें";
+"settings.notifications.prefs.title" = "सूचना प्राथमिकताएँ";
+"settings.notifications.prefs.subtitle" = "विषय और शांत घंटे";
+"settings.appearance.section" = "दिखावट";
+"settings.appearance.theme" = "थीम";
+"settings.privacy.section" = "गोपनीयता";
+"settings.privacy.analytics.title" = "एनालिटिक्स और डायग्नॉस्टिक्स";
+"settings.privacy.analytics.subtitle" = "ऐप को बेहतर बनाने में मदद करें";
+"settings.privacy.policy" = "गोपनीयता नीति";
+"settings.newsletter.section" = "न्यूज़लेटर";
+"settings.newsletter.title" = "साप्ताहिक न्यूज़लेटर";
+"settings.newsletter.subtitle" = "सप्ताह का सारांश ईमेल द्वारा प्राप्त करें";
+"settings.about.section" = "बारे में";
+"settings.about.version" = "संस्करण";
+"settings.about.visit" = "ईथरवर्ल्ड पर जाएँ";
+"settings.about.twitter" = "ट्विटर पर फॉलो करें";
+"settings.account.section" = "खाता";
+"settings.account.signedInAs" = "साइन इन के रूप में";
+"settings.account.signOut" = "साइन आउट";
+"settings.developer.section" = "डेवलपर";
+"settings.developer.trigger" = "अभी बैकग्राउंड रिफ्रेश ट्रिगर करें";
+"settings.developer.footer" = "नई लेख सूचना देखने के लिए पहले नोटिफिकेशन अनुमति दें।";
+
+"settings.language.section" = "भाषा";
+"settings.language.title" = "ऐप भाषा";
+"settings.language.subtitle" = "ऐप के लिए भाषा बदलें";
+
+"common.cancel" = "रद्द करें";
+"common.signOut" = "साइन आउट";
+"common.error.generic" = "कुछ गलत हो गया। कृपया पुनः प्रयास करें।";
+
+"home.today" = "आज";
+"home.topStories" = "शीर्ष कहानियाँ";
+"home.minRead" = "मिनट पढ़ें";
+"home.allCaughtUp" = "सब देख लिया!";
+"home.noStories" = "अभी आपकी फ़ीड में\nकोई नई कहानियाँ नहीं हैं। थोड़ी देर बाद देखें।";
+"home.refreshFeed" = "फ़ीड ताज़ा करें";

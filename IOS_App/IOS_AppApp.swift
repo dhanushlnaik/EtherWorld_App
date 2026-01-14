@@ -9,12 +9,17 @@ import SwiftUI
 import SwiftData
 import BackgroundTasks
 
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
+
 @main
 struct IOS_AppApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var authManager = AuthenticationManager()
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
     @AppStorage("darkModeEnabled") private var legacyDarkModeEnabled: Bool = false
+    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
 
     private var resolvedTheme: AppTheme {
         AppTheme(rawValue: appThemeRaw) ?? AppTheme.fromUserDefaults()
@@ -34,6 +39,12 @@ struct IOS_AppApp: App {
     }()
 
     init() {
+        // Initialize Firebase
+        #if canImport(FirebaseCore)
+        FirebaseApp.configure()
+        print("🔥 Firebase initialized successfully")
+        #endif
+        
         // One-time migration:
         // - If a user previously had only the legacy `darkModeEnabled` setting, preserve it.
         // - If neither exists (fresh install), default to system.
@@ -62,9 +73,13 @@ struct IOS_AppApp: App {
                 if authManager.isAuthenticated {
                     AdaptiveContentView()
                         .environmentObject(authManager)
+                        .environment(\.locale, Locale(identifier: appLanguageCode))
+                        .id(appLanguageCode)
                 } else {
                     LoginView()
                         .environmentObject(authManager)
+                        .environment(\.locale, Locale(identifier: appLanguageCode))
+                        .id(appLanguageCode)
                 }
             }
             .preferredColorScheme(resolvedTheme.preferredColorScheme)

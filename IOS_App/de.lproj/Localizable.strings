@@ -1,0 +1,60 @@
+"app.name" = "EtherWorld";
+"login.tagline" = "Bleiben Sie mit Ethereum-Nachrichten auf dem Laufenden";
+"login.apple" = "Mit Apple fortfahren";
+"login.google" = "Mit Google fortfahren";
+"login.or" = "oder";
+"login.email.title" = "Mit E-Mail anmelden";
+"login.email.placeholder" = "Geben Sie Ihre E-Mail ein";
+"login.email.note" = "Wir senden Ihnen einen magischen Link zum Anmelden";
+"login.newsletter.title" = "Wöchentlicher Newsletter (optional)";
+"login.newsletter.subtitle" = "Erhalten Sie eine prägnante Zusammenfassung der Woche in Ihren Posteingang.";
+"login.continue" = "Fortfahren";
+"login.footer.text" = "Durch Fortfahren stimmen Sie unseren zu";
+"login.footer.link" = "Nutzungsbedingungen und Datenschutzrichtlinie";
+"login.success" = "Willkommen!";
+
+"tab.home" = "Startseite";
+"tab.search" = "Suchen";
+"tab.saved" = "Gespeichert";
+"tab.profile" = "Mein EW";
+
+"settings.title" = "Einstellungen";
+"settings.notifications.section" = "Benachrichtigungen";
+"settings.notifications.title" = "Benachrichtigungen für Neue Artikel";
+"settings.notifications.subtitle" = "Erhalten Sie eine Benachrichtigung, wenn neue Artikel veröffentlicht werden";
+"settings.notifications.prefs.title" = "Benachrichtigungseinstellungen";
+"settings.notifications.prefs.subtitle" = "Themen und stille Stunden";
+"settings.appearance.section" = "Erscheinungsbild";
+"settings.appearance.theme" = "Design";
+"settings.privacy.section" = "Datenschutz";
+"settings.privacy.analytics.title" = "Analytik und Diagnose";
+"settings.privacy.analytics.subtitle" = "Helfen Sie, die App zu verbessern";
+"settings.privacy.policy" = "Datenschutzrichtlinie";
+"settings.newsletter.section" = "Newsletter";
+"settings.newsletter.title" = "Wöchentlicher Newsletter";
+"settings.newsletter.subtitle" = "Erhalten Sie eine prägnante Zusammenfassung der Woche per E-Mail";
+"settings.about.section" = "Über";
+"settings.about.version" = "Version";
+"settings.about.visit" = "EtherWorld besuchen";
+"settings.about.twitter" = "Auf Twitter folgen";
+"settings.account.section" = "Konto";
+"settings.account.signedInAs" = "Angemeldet als";
+"settings.account.signOut" = "Abmelden";
+"settings.developer.section" = "Entwickler";
+"settings.developer.trigger" = "Hintergrund-Aktualisierung Jetzt Auslösen";
+"settings.developer.footer" = "Geben Sie zuerst die Benachrichtigungsberechtigung, um eine Testwarnmeldung zu sehen, wenn ein neuer Artikel erkannt wird.";
+
+"settings.language.section" = "Sprache";
+"settings.language.title" = "App-Sprache";
+"settings.language.subtitle" = "Ändern Sie die Sprache der App";
+
+"common.cancel" = "Abbrechen";
+"common.signOut" = "Abmelden";
+"common.error.generic" = "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.";
+
+"home.today" = "Heute";
+"home.topStories" = "TOP-GESCHICHTEN";
+"home.minRead" = "Min. Lesezeit";
+"home.allCaughtUp" = "Alles auf dem neuesten Stand!";
+"home.noStories" = "Es gibt derzeit keine neuen Geschichten in Ihrem\nFeed. Schauen Sie später wieder vorbei.";
+"home.refreshFeed" = "Feed Aktualisieren";

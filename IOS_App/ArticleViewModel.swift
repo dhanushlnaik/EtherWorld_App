@@ -10,6 +10,7 @@ final class ArticleViewModel: ObservableObject {
     @Published private(set) var hasMoreArticles: Bool = true
     @Published var errorMessage: String?
     @Published private(set) var lastUpdated: Date?
+    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
     private let service: ArticleService
     private let paginatedService: PaginatedArticleService?
@@ -18,6 +19,7 @@ final class ArticleViewModel: ObservableObject {
     private let lastUpdatedKey = "lastArticlesUpdate"
     private var currentPage: Int = 1
     private let pageSize: Int = 50
+    private var languageObserver: AnyCancellable?
     private let cacheURL: URL = {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         return caches.appendingPathComponent("articles-cache.json")
@@ -30,6 +32,7 @@ final class ArticleViewModel: ObservableObject {
         loadSavedState()
         loadReadState()
         loadLastUpdated()
+        setupLanguageObserver()
     }
 
     var articleService: ArticleService { service }
@@ -228,6 +231,21 @@ final class ArticleViewModel: ObservableObject {
             let days = Int(interval / 86400)
             return "\(days) day\(days == 1 ? "" : "s") ago"
         }
+    }
+    
+    private func setupLanguageObserver() {
+        // Observe UserDefaults changes for app language
+        languageObserver = NotificationCenter.default
+            .publisher(for: UserDefaults.didChangeNotification)
+            .compactMap { _ in UserDefaults.standard.string(forKey: "appLanguage") }
+            .removeDuplicates()
+            .dropFirst() // Skip initial value
+            .sink { [weak self] newLanguage in
+                Task { @MainActor [weak self] in
+                    print("🌍 Language changed to \(newLanguage), reloading articles...")
+                    await self?.load()
+                }
+            }
     }
 }
 

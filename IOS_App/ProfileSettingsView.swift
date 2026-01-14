@@ -160,6 +160,7 @@ struct SettingsSectionsView: View {
     @AppStorage("quietStartHour") private var quietStartHour: Int = 23
     @AppStorage("quietEndHour") private var quietEndHour: Int = 7
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
+    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     @AppStorage("analyticsEnabled") private var analyticsEnabled = false
     @AppStorage("newsletterOptIn") private var newsletterOptIn = false
     @EnvironmentObject var viewModel: ArticleViewModel
@@ -240,6 +241,39 @@ struct SettingsSectionsView: View {
             }
         } header: {
             Text("Appearance")
+        }
+        
+        // Language Section
+        Section {
+            HStack(spacing: 12) {
+                Image(systemName: "globe")
+                    .foregroundStyle(.blue)
+                    .frame(width: 28)
+                    .font(.system(size: 16))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("settings.language.title")
+                        .fontWeight(.medium)
+                    Text("settings.language.subtitle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("Language", selection: $appLanguageCode) {
+                    Text("English").tag("en")
+                    Text("हिन्दी").tag("hi")
+                    Text("Español").tag("es")
+                    Text("Français").tag("fr")
+                    Text("Deutsch").tag("de")
+                    Text("Português").tag("pt")
+                }
+                .pickerStyle(.menu)
+            }
+            .padding(.vertical, 4)
+            .onChange(of: appLanguageCode) { _, _ in
+                HapticFeedback.light()
+            }
+        } header: {
+            Text("settings.language.section")
         }
         
         // Newsletter

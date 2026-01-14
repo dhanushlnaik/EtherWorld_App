@@ -1,0 +1,60 @@
+"app.name" = "EtherWorld";
+"login.tagline" = "Stay updated with Ethereum news";
+"login.apple" = "Continue with Apple";
+"login.google" = "Continue with Google";
+"login.or" = "or";
+"login.email.title" = "Sign in with email";
+"login.email.placeholder" = "Enter your email";
+"login.email.note" = "We'll send you a magic link to sign in";
+"login.newsletter.title" = "Weekly newsletter (optional)";
+"login.newsletter.subtitle" = "Get a concise recap of the week delivered to your inbox.";
+"login.continue" = "Continue";
+"login.footer.text" = "By continuing, you agree to our";
+"login.footer.link" = "Terms of Service & Privacy Policy";
+"login.success" = "Welcome!";
+
+"tab.home" = "Home";
+"tab.search" = "Search";
+"tab.saved" = "Saved";
+"tab.profile" = "My EW";
+
+"settings.title" = "Settings";
+"settings.notifications.section" = "Notifications";
+"settings.notifications.title" = "New Article Notifications";
+"settings.notifications.subtitle" = "Get notified when new articles are published";
+"settings.notifications.prefs.title" = "Notification Preferences";
+"settings.notifications.prefs.subtitle" = "Topics and quiet hours";
+"settings.appearance.section" = "Appearance";
+"settings.appearance.theme" = "Theme";
+"settings.privacy.section" = "Privacy";
+"settings.privacy.analytics.title" = "Analytics & Diagnostics";
+"settings.privacy.analytics.subtitle" = "Help improve the app";
+"settings.privacy.policy" = "Privacy Policy";
+"settings.newsletter.section" = "Newsletter";
+"settings.newsletter.title" = "Weekly Newsletter";
+"settings.newsletter.subtitle" = "Get a concise recap of the week via email";
+"settings.about.section" = "About";
+"settings.about.version" = "Version";
+"settings.about.visit" = "Visit EtherWorld";
+"settings.about.twitter" = "Follow on Twitter";
+"settings.account.section" = "Account";
+"settings.account.signedInAs" = "Signed in as";
+"settings.account.signOut" = "Sign Out";
+"settings.developer.section" = "Developer";
+"settings.developer.trigger" = "Trigger Background Refresh Now";
+"settings.developer.footer" = "Grant notification permission first to see a test alert when a new article is detected.";
+
+"settings.language.section" = "Language";
+"settings.language.title" = "App Language";
+"settings.language.subtitle" = "Change the language for the app";
+
+"common.cancel" = "Cancel";
+"common.signOut" = "Sign Out";
+"common.error.generic" = "Something went wrong. Please try again.";
+
+"home.today" = "Today";
+"home.topStories" = "TOP STORIES";
+"home.minRead" = "min read";
+"home.allCaughtUp" = "All caught up!";
+"home.noStories" = "There are no new stories in your\nfeed right now. Check back in a bit.";
+"home.refreshFeed" = "Refresh Feed";

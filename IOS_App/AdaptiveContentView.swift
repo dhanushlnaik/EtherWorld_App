@@ -8,10 +8,10 @@ struct AdaptiveContentView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
     
     enum NavigationTab: String, CaseIterable {
-        case home = "Home"
-        case search = "Search"
-        case saved = "Saved"
-        case profile = "My EW"
+        case home = "tab.home"
+        case search = "tab.search"
+        case saved = "tab.saved"
+        case profile = "tab.profile"
         
         var icon: String {
             switch self {
@@ -56,7 +56,11 @@ struct AdaptiveContentView: View {
                     Button {
                         selectedTab = tab
                     } label: {
-                        Label(tab.rawValue, systemImage: tab.icon)
+                        Label {
+                            Text(LocalizedStringKey(tab.rawValue))
+                        } icon: {
+                            Image(systemName: tab.icon)
+                        }
                     }
                     .listRowBackground(selectedTab == tab ? Color.blue.opacity(0.1) : Color.clear)
                 }
@@ -86,25 +90,41 @@ struct AdaptiveContentView: View {
         TabView(selection: $selectedTab) {
             HomeFeedView()
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label {
+                        Text("tab.home")
+                    } icon: {
+                        Image(systemName: "house.fill")
+                    }
                 }
                 .tag(NavigationTab.home)
             
             DiscoverView()
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label {
+                        Text("tab.search")
+                    } icon: {
+                        Image(systemName: "magnifyingglass")
+                    }
                 }
                 .tag(NavigationTab.search)
             
             SavedArticlesView()
                 .tabItem {
-                    Label("Saved", systemImage: "bookmark.fill")
+                    Label {
+                        Text("tab.saved")
+                    } icon: {
+                        Image(systemName: "bookmark.fill")
+                    }
                 }
                 .tag(NavigationTab.saved)
             
             ProfileSettingsView()
                 .tabItem {
-                    Label("My EW", systemImage: "person.crop.circle.fill")
+                    Label {
+                        Text("tab.profile")
+                    } icon: {
+                        Image(systemName: "person.crop.circle.fill")
+                    }
                 }
                 .tag(NavigationTab.profile)
         }

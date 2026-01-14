@@ -28,11 +28,11 @@ struct LoginView: View {
                         .foregroundStyle(.blue)
                         .shadow(color: .blue.opacity(0.3), radius: 10)
                     
-                    Text("EtherWorld")
+                    Text("app.name")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
-                    Text("Stay updated with Ethereum news")
+                    Text("login.tagline")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -47,6 +47,7 @@ struct LoginView: View {
                     SignInWithAppleButton(
                         onRequest: { request in
                             request.requestedScopes = [.fullName, .email]
+                            request.nonce = authManager.generateNonce()
                         },
                         onCompletion: { result in
                             switch result {
@@ -71,7 +72,7 @@ struct LoginView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "g.circle.fill")
                                 .font(.system(size: 20))
-                            Text("Continue with Google")
+                            Text("login.google")
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -90,7 +91,7 @@ struct LoginView: View {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(height: 1)
-                        Text("or")
+                        Text("login.or")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 8)
@@ -102,11 +103,11 @@ struct LoginView: View {
                     
                     // Email Sign In
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Sign in with email")
+                        Text("login.email.title")
                             .font(.headline)
                             .foregroundColor(.primary)
                         
-                        TextField("Enter your email", text: $email)
+                        TextField("login.email.placeholder", text: $email)
                             .textContentType(.emailAddress)
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
@@ -119,15 +120,15 @@ struct LoginView: View {
                                     .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                             )
                         
-                        Text("We'll send you a magic link to sign in")
+                        Text("login.email.note")
                             .font(.caption)
                             .foregroundColor(.secondary)
 
                         Toggle(isOn: $newsletterOptIn) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Weekly newsletter (optional)")
+                                Text("login.newsletter.title")
                                     .fontWeight(.semibold)
-                                Text("Get a concise recap of the week delivered to your inbox.")
+                                Text("login.newsletter.subtitle")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -151,7 +152,7 @@ struct LoginView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text("Continue")
+                                Text("login.continue")
                                     .fontWeight(.semibold)
                             }
                         }
@@ -182,11 +183,11 @@ struct LoginView: View {
                 
                 // Footer
                 VStack(spacing: 8) {
-                    Text("By continuing, you agree to our")
+                    Text("login.footer.text")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Link("Terms of Service & Privacy Policy", destination: URL(string: "https://etherworld.co/privacy")!)
+                    Link("login.footer.link", destination: URL(string: "https://etherworld.co/privacy")!)
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
@@ -204,7 +205,7 @@ struct LoginView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.green)
                         
-                        Text("Welcome!")
+                        Text("login.success")
                             .font(.title2)
                             .fontWeight(.bold)
                     }

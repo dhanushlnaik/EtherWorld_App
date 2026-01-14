@@ -35,9 +35,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("New Article Notifications")
+                                Text("settings.notifications.title")
                                     .fontWeight(.medium)
-                                Text("Get notified when new articles are published")
+                                Text("settings.notifications.subtitle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -65,9 +65,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Notification Preferences")
+                                Text("settings.notifications.prefs.title")
                                     .fontWeight(.medium)
-                                Text("Topics and quiet hours")
+                                Text("settings.notifications.prefs.subtitle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -80,14 +80,14 @@ struct SettingsView: View {
                     .foregroundStyle(.primary)
                     .disabled(!notificationsEnabled)
                 } header: {
-                    Text("Notifications")
+                    Text("settings.notifications.section")
                 }
                 
                 // Appearance Section
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
                         Label {
-                            Text("Theme")
+                            Text("settings.appearance.theme")
                                 .fontWeight(.medium)
                         } icon: {
                             Image(systemName: "circle.lefthalf.filled")
@@ -102,7 +102,7 @@ struct SettingsView: View {
                         HapticFeedback.light()
                     }
                 } header: {
-                    Text("Appearance")
+                    Text("settings.appearance.section")
                 }
                 
                 // Privacy & Data Section
@@ -115,7 +115,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.green)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("Privacy Policy")
+                            Text("settings.privacy.policy")
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -132,9 +132,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Analytics & Diagnostics")
+                                Text("settings.privacy.analytics.title")
                                     .fontWeight(.medium)
-                                Text("Help improve the app")
+                                Text("settings.privacy.analytics.subtitle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -144,7 +144,7 @@ struct SettingsView: View {
                         HapticFeedback.light()
                     }
                 } header: {
-                    Text("Privacy")
+                    Text("settings.privacy.section")
                 }
 
                 // Newsletter Section
@@ -156,9 +156,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Weekly Newsletter")
+                                Text("settings.newsletter.title")
                                     .fontWeight(.medium)
-                                Text("Get a concise recap of the week via email")
+                                Text("settings.newsletter.subtitle")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -168,7 +168,7 @@ struct SettingsView: View {
                         HapticFeedback.light()
                     }
                 } header: {
-                    Text("Newsletter")
+                    Text("settings.newsletter.section")
                 }
                 
                 // About Section
@@ -178,7 +178,7 @@ struct SettingsView: View {
                             .foregroundStyle(.gray)
                             .frame(width: 28)
                             .font(.system(size: 16))
-                        Text("Version")
+                        Text("settings.about.version")
                             .fontWeight(.medium)
                         Spacer()
                         Text("1.0.0")
@@ -191,7 +191,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("Visit EtherWorld")
+                            Text("settings.about.visit")
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "arrow.up.right")
@@ -207,7 +207,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("Follow on Twitter")
+                            Text("settings.about.twitter")
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "arrow.up.right")
@@ -217,14 +217,14 @@ struct SettingsView: View {
                     }
                     .foregroundStyle(.primary)
                 } header: {
-                    Text("About")
+                    Text("settings.about.section")
                 }
                 
                 // Account Section
                 Section {
                     if let user = authManager.currentUser {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Signed in as")
+                            Text("settings.account.signedInAs")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(user.email)
@@ -242,12 +242,12 @@ struct SettingsView: View {
                                 .foregroundStyle(.red)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("Sign Out")
+                            Text("settings.account.signOut")
                                 .fontWeight(.medium)
                         }
                     }
                 } header: {
-                    Text("Account")
+                    Text("settings.account.section")
                 }
                 
                 // Offline & Cache Section
@@ -262,19 +262,19 @@ struct SettingsView: View {
                             Image(systemName: "bolt.fill")
                                 .foregroundStyle(.orange)
                                 .frame(width: 28)
-                            Text("Trigger Background Refresh Now")
+                            Text("settings.developer.trigger")
                         }
                     }
                     .disabled(!notificationManager.isAuthorized)
                     .accessibilityLabel("Trigger background refresh")
                     .accessibilityHint("Manually triggers the background refresh to check for new articles and send a test notification")
                 } header: {
-                    Text("Developer")
+                    Text("settings.developer.section")
                 } footer: {
-                    Text("Grant notification permission first to see a test alert when a new article is detected.")
+                    Text("settings.developer.footer")
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(Text("settings.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -289,9 +289,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showingPrivacyPolicy) {
                 PrivacyPolicyView()
             }
-            .alert("Sign Out", isPresented: $showingLogoutConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Sign Out", role: .destructive) {
+            .alert("settings.account.signOut", isPresented: $showingLogoutConfirmation) {
+                Button("common.cancel", role: .cancel) {}
+                Button("common.signOut", role: .destructive) {
                     authManager.logout()
                 }
             } message: {

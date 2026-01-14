@@ -7,22 +7,38 @@ struct ContentView: View {
         TabView {
             HomeFeedView()
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label {
+                        Text("tab.home")
+                    } icon: {
+                        Image(systemName: "house.fill")
+                    }
                 }
             
             DiscoverView()
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label {
+                        Text("tab.search")
+                    } icon: {
+                        Image(systemName: "magnifyingglass")
+                    }
                 }
             
             SavedArticlesView()
                 .tabItem {
-                    Label("Saved", systemImage: "bookmark.fill")
+                    Label {
+                        Text("tab.saved")
+                    } icon: {
+                        Image(systemName: "bookmark.fill")
+                    }
                 }
             
             SettingsView()
                 .tabItem {
-                    Label("My EW", systemImage: "person.crop.circle.fill")
+                    Label {
+                        Text("tab.profile")
+                    } icon: {
+                        Image(systemName: "person.crop.circle.fill")
+                    }
                 }
         }
         .environmentObject(viewModel)

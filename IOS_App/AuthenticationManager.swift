@@ -2,6 +2,11 @@ import Foundation
 import SwiftUI
 import Combine
 import AuthenticationServices
+import CryptoKit
+
+#if canImport(FirebaseAuth)
+import FirebaseAuth
+#endif
 
 @MainActor
 final class AuthenticationManager: ObservableObject {
@@ -12,6 +17,9 @@ final class AuthenticationManager: ObservableObject {
     
     private let tokenKey = "authToken"
     private let userKey = "currentUser"
+    
+    // For Apple Sign-In nonce
+    private var currentNonce: String?
     
     struct User: Codable {
         let id: String
@@ -28,7 +36,62 @@ final class AuthenticationManager: ObservableObject {
     
     init() {
         checkAuthStatus()
+        #if canImport(FirebaseAuth)
+        setupFirebaseAuthListener()
+        #endif
     }
+    
+    #if canImport(FirebaseAuth)
+    private var authStateListener: AuthStateDidChangeListenerHandle?
+    
+    private func setupFirebaseAuthListener() {
+        authStateListener = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            Task { @MainActor [weak self] in
+                if let firebaseUser = firebaseUser {
+                    self?.handleFirebaseUser(firebaseUser)
+                } else if self?.isAuthenticated == true {
+                    // User signed out from Firebase
+                    self?.logout()
+                }
+            }
+        }
+    }
+    
+    private func handleFirebaseUser(_ firebaseUser: FirebaseAuth.User) {
+        let provider: AuthProvider = {
+            if let providerData = firebaseUser.providerData.first {
+                switch providerData.providerID {
+                case "apple.com": return .apple
+                case "google.com": return .google
+                default: return .email
+                }
+            }
+            return .email
+        }()
+        
+        let user = User(
+            id: firebaseUser.uid,
+            email: firebaseUser.email ?? "",
+            name: firebaseUser.displayName,
+            authProvider: provider
+        )
+        
+        firebaseUser.getIDToken { [weak self] token, error in
+            guard let token = token, error == nil else { return }
+            Task { @MainActor [weak self] in
+                _ = KeychainHelper.shared.save(token, forKey: self?.tokenKey ?? "authToken")
+                self?.saveUserData(user)
+                self?.isAuthenticated = true
+            }
+        }
+    }
+    
+    deinit {
+        if let listener = authStateListener {
+            Auth.auth().removeStateDidChangeListener(listener)
+        }
+    }
+    #endif
     
     func checkAuthStatus() {
         if let token = KeychainHelper.shared.get(forKey: tokenKey),
@@ -42,8 +105,6 @@ final class AuthenticationManager: ObservableObject {
     }
     
     func sendMagicLink(email: String) async {
-        // TEMP LOGIN (MVP): allow entry after email.
-        // We intentionally avoid showing errors here.
         let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
@@ -51,7 +112,24 @@ final class AuthenticationManager: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
-        // Small delay for UX parity with a real network call.
+        #if canImport(FirebaseAuth)
+        // Firebase Auth: Send sign-in link to email
+        let actionCodeSettings = ActionCodeSettings()
+        actionCodeSettings.url = URL(string: "https://etherworld.co/auth/callback")
+        actionCodeSettings.handleCodeInApp = true
+        actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier ?? "com.etherworld.app")
+        
+        do {
+            try await Auth.auth().sendSignInLink(toEmail: trimmed, actionCodeSettings: actionCodeSettings)
+            // Save email for link verification
+            UserDefaults.standard.set(trimmed, forKey: "emailForSignIn")
+            print("✅ Magic link sent via Firebase to \(trimmed)")
+        } catch {
+            errorMessage = "Failed to send magic link: \(error.localizedDescription)"
+            print("❌ Firebase magic link error: \(error)")
+        }
+        #else
+        // DEMO MODE: Allow entry without Firebase
         try? await Task.sleep(nanoseconds: 250_000_000)
 
         let token = UUID().uuidString
@@ -62,11 +140,12 @@ final class AuthenticationManager: ObservableObject {
             authProvider: .email
         )
 
-        // Persist if possible; if not, still allow entry.
         _ = KeychainHelper.shared.save(token, forKey: tokenKey)
         saveUserData(user)
         isAuthenticated = true
         currentUser = user
+        print("✅ Demo login successful for \(trimmed)")
+        #endif
     }
     
     func verifyMagicLinkToken(_ token: String) async {
@@ -102,6 +181,43 @@ final class AuthenticationManager: ObservableObject {
             return
         }
         
+        #if canImport(FirebaseAuth)
+        // Firebase Auth: Sign in with Apple
+        guard let idTokenData = appleIDCredential.identityToken,
+              let idTokenString = String(data: idTokenData, encoding: .utf8) else {
+            errorMessage = "Failed to get Apple ID token"
+            return
+        }
+        
+        // Use the stored nonce from the request
+        guard let nonce = currentNonce else {
+            errorMessage = "Invalid nonce state. Please try again."
+            return
+        }
+        
+        let credential = OAuthProvider.credential(
+            withProviderID: "apple.com",
+            idToken: idTokenString,
+            rawNonce: nonce
+        )
+        
+        Task {
+            isLoading = true
+            defer { isLoading = false }
+            
+            do {
+                let result = try await Auth.auth().signIn(with: credential)
+                print("✅ Apple Sign-In successful via Firebase: \(result.user.email ?? "no email")")
+                // Firebase listener will handle the rest
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Apple Sign-In failed: \(error.localizedDescription)"
+                }
+                print("❌ Firebase Apple Sign-In error: \(error)")
+            }
+        }
+        #else
+        // DEMO MODE: Allow Apple sign-in without Firebase
         let userID = appleIDCredential.user
         let email = appleIDCredential.email ?? "\(userID)@privaterelay.appleid.com"
         let fullName = appleIDCredential.fullName
@@ -124,21 +240,53 @@ final class AuthenticationManager: ObservableObject {
         } else {
             errorMessage = "Failed to save authentication token"
         }
+        print("✅ Demo Apple Sign-In successful")
+        #endif
     }
     
     func signInWithGoogle() async {
-        // Google Sign-In requires Firebase SDK or Google Sign-In SDK
-        // This is a placeholder for future implementation
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
         
+        #if canImport(FirebaseAuth)
+        // Firebase Auth: Google Sign-In using OAuth provider
+        do {
+            let provider = OAuthProvider(providerID: "google.com")
+            provider.scopes = ["email", "profile"]
+            
+            // Attempt to get existing credential first
+            if let credential = try? await provider.credential(with: nil) {
+                let result = try await Auth.auth().signIn(with: credential)
+                print("✅ Google Sign-In successful via Firebase: \(result.user.email ?? "no email")")
+                // Firebase listener will handle the rest
+            } else {
+                errorMessage = "Google Sign-In is not yet configured in Firebase Console. Please enable Google provider in Authentication settings."
+                print("⚠️ Google provider not enabled in Firebase Console")
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Google Sign-In failed: \(error.localizedDescription)"
+            }
+            print("❌ Firebase Google Sign-In error: \(error)")
+        }
+        #else
+        // DEMO MODE: Show placeholder message
         try? await Task.sleep(nanoseconds: 500_000_000)
-        
-        errorMessage = "Google Sign-In requires additional setup. Please use email or Apple sign-in for now."
+        errorMessage = "Google Sign-In requires Firebase setup. Please use email or Apple sign-in for now."
+        #endif
     }
     
     func logout() {
+        #if canImport(FirebaseAuth)
+        do {
+            try Auth.auth().signOut()
+            print("✅ Firebase sign-out successful")
+        } catch {
+            print("❌ Firebase sign-out error: \(error)")
+        }
+        #endif
+        
         _ = KeychainHelper.shared.delete(forKey: tokenKey)
         UserDefaults.standard.removeObject(forKey: userKey)
         isAuthenticated = false
@@ -164,5 +312,38 @@ final class AuthenticationManager: ObservableObject {
             .replacingOccurrences(of: ".", with: " ")
             .capitalized
         return name
+    }
+    
+    // MARK: - Apple Sign-In Helpers
+    
+    /// Generates a cryptographically secure random nonce for Apple Sign-In
+    func generateNonce() -> String {
+        let nonce = randomNonceString()
+        currentNonce = nonce
+        return sha256(nonce)
+    }
+    
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        if errorCode != errSecSuccess {
+            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        }
+        
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        let nonce = randomBytes.map { byte in
+            charset[Int(byte) % charset.count]
+        }
+        return String(nonce)
+    }
+    
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            String(format: "%02x", $0)
+        }.joined()
+        return hashString
     }
 }

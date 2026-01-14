@@ -11,7 +11,7 @@ struct FeedHeaderView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
-                Text("Today")
+                Text("home.today")
                     .font(.largeTitle)
                     .fontWeight(.bold)
             }
@@ -45,7 +45,7 @@ struct HeroArticleCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     if let minutes = article.readingTimeMinutes {
-                        Text("\(minutes) min read")
+                        Text("\(minutes) \(Text("home.minRead"))")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -164,7 +164,7 @@ struct EmptyFeedView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
-                Text("Today")
+                Text("home.today")
                     .font(.largeTitle)
                     .fontWeight(.bold)
             }
@@ -183,11 +183,11 @@ struct EmptyFeedView: View {
                             .foregroundColor(.gray.opacity(0.5))
                     )
                 
-                Text("All caught up!")
+                Text("home.allCaughtUp")
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("There are no new stories in your\nfeed right now. Check back in a bit.")
+                Text("home.noStories")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -197,7 +197,7 @@ struct EmptyFeedView: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.clockwise")
-                        Text("Refresh Feed")
+                        Text("home.refreshFeed")
                     }
                     .fontWeight(.medium)
                     .foregroundColor(.white)
@@ -224,7 +224,7 @@ struct LoadingFeedView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
-                    Text("Today")
+                    Text("home.today")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                 }
@@ -345,7 +345,7 @@ struct HomeFeedView: View {
                     .fill(Color.primary)
                     .frame(width: 8, height: 8)
                 
-                Text("TOP STORIES")
+                Text("home.topStories")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
