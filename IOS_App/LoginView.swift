@@ -217,6 +217,10 @@ struct LoginView: View {
                 .transition(.opacity)
             }
         }
+        .onAppear {
+            // Clear any stale errors when the login screen is shown
+            authManager.errorMessage = nil
+        }
         .animation(.easeInOut, value: showingSuccess)
     }
     

@@ -3,10 +3,7 @@ import SwiftUI
 import Combine
 import AuthenticationServices
 import CryptoKit
-
-#if canImport(FirebaseAuth)
 import FirebaseAuth
-#endif
 
 @MainActor
 final class AuthenticationManager: ObservableObject {
@@ -112,6 +109,10 @@ final class AuthenticationManager: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
+        // Log the request to Supabase for analytics/throttling (non-blocking)
+        let extractedName = extractName(from: trimmed)
+        Task { await SupabaseService.shared.logEmail(email: trimmed, name: extractedName) }
+
         #if canImport(FirebaseAuth)
         // Firebase Auth: Send sign-in link to email
         let actionCodeSettings = ActionCodeSettings()
@@ -195,10 +196,11 @@ final class AuthenticationManager: ObservableObject {
             return
         }
         
-        let credential = OAuthProvider.credential(
-            withProviderID: "apple.com",
-            idToken: idTokenString,
-            rawNonce: nonce
+        // Firebase 12+: use the dedicated Apple helper for OIDC credential
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: idTokenString,
+            rawNonce: nonce,
+            fullName: appleIDCredential.fullName
         )
         
         Task {
@@ -245,36 +247,57 @@ final class AuthenticationManager: ObservableObject {
     }
     
     func signInWithGoogle() async {
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-        
-        #if canImport(FirebaseAuth)
-        // Firebase Auth: Google Sign-In using OAuth provider
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+
         do {
             let provider = OAuthProvider(providerID: "google.com")
             provider.scopes = ["email", "profile"]
-            
-            // Attempt to get existing credential first
-            if let credential = try? await provider.credential(with: nil) {
-                let result = try await Auth.auth().signIn(with: credential)
-                print("✅ Google Sign-In successful via Firebase: \(result.user.email ?? "no email")")
-                // Firebase listener will handle the rest
-            } else {
-                errorMessage = "Google Sign-In is not yet configured in Firebase Console. Please enable Google provider in Authentication settings."
-                print("⚠️ Google provider not enabled in Firebase Console")
+
+            // Bridge the callback-based API to async/await
+            let credential = try await withCheckedThrowingContinuation { continuation in
+                provider.getCredentialWith(nil) { credential, error in
+                    if let credential {
+                        continuation.resume(returning: credential)
+                    } else {
+                        let nsError = error ?? NSError(
+                            domain: "GoogleSignIn",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "Unable to create Google credential"]
+                        )
+                        continuation.resume(throwing: nsError)
+                    }
+                }
             }
-        } catch {
+
+            let authResult = try await Auth.auth().signIn(with: credential)
+
             await MainActor.run {
-                errorMessage = "Google Sign-In failed: \(error.localizedDescription)"
+                isLoading = false
+            }
+            print("✅ Google Sign-In successful via Firebase: \(authResult.user.email ?? "no email")")
+            // Firebase listener will handle the rest
+
+        } catch let error as NSError {
+            await MainActor.run {
+                if let code = AuthErrorCode(rawValue: error.code) {
+                    switch code {
+                    case .operationNotAllowed:
+                        errorMessage = "Google Sign-In is disabled in Firebase Console. Enable Google provider and try again."
+                    case .webContextCancelled, .webSignInUserInteractionFailure:
+                        errorMessage = "Sign-in was cancelled"
+                    default:
+                        errorMessage = "Google Sign-In failed: \(error.localizedDescription)"
+                    }
+                } else {
+                    errorMessage = "Google Sign-In failed: \(error.localizedDescription)"
+                }
+                isLoading = false
             }
             print("❌ Firebase Google Sign-In error: \(error)")
         }
-        #else
-        // DEMO MODE: Show placeholder message
-        try? await Task.sleep(nanoseconds: 500_000_000)
-        errorMessage = "Google Sign-In requires Firebase setup. Please use email or Apple sign-in for now."
-        #endif
     }
     
     func logout() {

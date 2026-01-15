@@ -13,6 +13,10 @@ import BackgroundTasks
 import FirebaseCore
 #endif
 
+#if canImport(FirebaseAuth)
+import FirebaseAuth
+#endif
+
 @main
 struct IOS_AppApp: App {
     @Environment(\.scenePhase) private var scenePhase
@@ -24,7 +28,7 @@ struct IOS_AppApp: App {
     private var resolvedTheme: AppTheme {
         AppTheme(rawValue: appThemeRaw) ?? AppTheme.fromUserDefaults()
     }
-
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -57,14 +61,6 @@ struct IOS_AppApp: App {
             }
         }
 
-        // Register background refresh task
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundRefreshManager.taskIdentifier, using: nil) { task in
-            guard let refreshTask = task as? BGAppRefreshTask else {
-                task.setTaskCompleted(success: false)
-                return
-            }
-            BackgroundRefreshManager.handle(task: refreshTask)
-        }
     }
 
     var body: some Scene {
@@ -82,7 +78,17 @@ struct IOS_AppApp: App {
                         .id(appLanguageCode)
                 }
             }
+            // Force full view swap when auth state changes so login screen appears immediately after sign-out
+            .id(authManager.isAuthenticated ? "authed" : "loggedOut")
             .preferredColorScheme(resolvedTheme.preferredColorScheme)
+            .onOpenURL { url in
+                // Handle OAuth callbacks from Google and other providers
+                #if canImport(FirebaseAuth)
+                if Auth.auth().canHandle(url) {
+                    print("🔗 Handling Firebase OAuth callback: \(url)")
+                }
+                #endif
+            }
             .onChange(of: appThemeRaw) { _, newValue in
                 // Keep legacy key consistent for any existing code paths.
                 let resolved = AppTheme(rawValue: newValue) ?? .system
