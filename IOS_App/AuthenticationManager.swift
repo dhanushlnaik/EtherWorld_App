@@ -11,7 +11,7 @@ final class AuthenticationManager: ObservableObject {
     @Published private(set) var currentUser: User?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var showMagicLinkSent: Bool = false
+    @Published var otpSent: Bool = false
     
     private let tokenKey = "authToken"
     private let userKey = "currentUser"
@@ -109,67 +109,45 @@ final class AuthenticationManager: ObservableObject {
         }
     }
     
-    func sendMagicLink(email: String) async {
+    func sendOTP(email: String) async {
         let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        let normalizedEmail = trimmed.lowercased()
+        guard !normalizedEmail.isEmpty else { return }
 
         isLoading = true
         errorMessage = nil
+        otpSent = false
         defer { isLoading = false }
 
         // Log the request to Supabase for analytics/throttling (non-blocking)
-        let extractedName = extractName(from: trimmed)
-        Task { await SupabaseService.shared.logEmail(email: trimmed, name: extractedName) }
+        let extractedName = extractName(from: normalizedEmail)
+        Task { await SupabaseService.shared.logEmail(email: normalizedEmail, name: extractedName) }
 
-        #if canImport(FirebaseAuth)
-        // Firebase Auth: Send sign-in link to email
-        let actionCodeSettings = ActionCodeSettings()
-        actionCodeSettings.url = URL(string: "https://etherworld.co/auth/callback")
-        actionCodeSettings.handleCodeInApp = true
-        actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier ?? "com.etherworld.app")
-        
         do {
-            try await FirebaseAuth.Auth.auth().sendSignInLink(toEmail: trimmed, actionCodeSettings: actionCodeSettings)
-            // Save email for link verification
-            UserDefaults.standard.set(trimmed, forKey: "emailForSignIn")
-            print("✅ Magic link sent via Firebase to \(trimmed)")
-            showMagicLinkSent = true
+            _ = try await NetworkManager.shared.sendOTP(email: normalizedEmail)
+            UserDefaults.standard.set(normalizedEmail, forKey: "emailForOTP")
+            print("✅ OTP sent via backend to \(normalizedEmail)")
+            otpSent = true
         } catch {
-            errorMessage = "Failed to send magic link: \(error.localizedDescription)"
-            print("❌ Firebase magic link error: \(error)")
+            if let networkError = error as? NetworkManager.NetworkError {
+                switch networkError {
+                case .serverError(let message):
+                    errorMessage = message
+                default:
+                    errorMessage = "Couldn't send code. Please try again."
+                }
+            } else {
+                errorMessage = "Couldn't send code. Please try again."
+            }
+            print("❌ OTP send error: \(error)")
         }
-        #else
-        // DEMO MODE: Allow entry without Firebase
-        try? await Task.sleep(nanoseconds: 250_000_000)
-
-        let token = UUID().uuidString
-        let user = User(
-            id: UUID().uuidString,
-            email: trimmed,
-            name: extractName(from: trimmed),
-            authProvider: .email
-        )
-
-        _ = KeychainHelper.shared.save(token, forKey: tokenKey)
-        saveUserData(user)
-        isAuthenticated = true
-        currentUser = user
-        print("✅ Demo login successful for \(trimmed)")
-        #endif
     }
     
-    func verifyMagicLink(url: URL) async {
-        let link = url.absoluteString
-        
-        // Note: isSignInWithEmailLink check omitted to resolve compiler ambiguity with FirebaseAuth.Auth
-        // The signIn(withEmail:link:) method below will naturally validate the link.
-        guard link.contains("oobCode") else {
-            errorMessage = "Invalid login link"
-            return
-        }
-
-        guard let email = UserDefaults.standard.string(forKey: "emailForSignIn") else {
-            errorMessage = "Could not find original email for verification"
+    func verifyOTP(email: String, code: String) async {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedEmail = trimmed.lowercased()
+        guard !normalizedEmail.isEmpty, code.count == 6 else {
+            errorMessage = "Please enter a valid 6-digit code"
             return
         }
 
@@ -178,20 +156,52 @@ final class AuthenticationManager: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let result = try await FirebaseAuth.Auth.auth().signIn(withEmail: email, link: link)
-            print("✅ Successfully signed in with magic link: \(result.user.email ?? email)")
-            // The Firebase listener setup in init() will catch this sign-in and update isAuthenticated/currentUser
-            UserDefaults.standard.removeObject(forKey: "emailForSignIn")
+            let authResponse = try await NetworkManager.shared.verifyOTP(email: normalizedEmail, code: code)
+
+            let user = User(
+                id: authResponse.user.id,
+                email: authResponse.user.email,
+                name: authResponse.user.name,
+                authProvider: .email
+            )
+
+            _ = KeychainHelper.shared.save(authResponse.token, forKey: tokenKey)
+            saveUserData(user)
+            isAuthenticated = true
+            currentUser = user
+            UserDefaults.standard.removeObject(forKey: "emailForOTP")
+            print("✅ Successfully signed in with OTP: \(normalizedEmail)")
+
+            #if canImport(FirebaseAuth)
+            if let firebaseToken = authResponse.firebaseToken {
+                Task {
+                    do {
+                        _ = try await FirebaseAuth.Auth.auth().signIn(withCustomToken: firebaseToken)
+                        print("✅ Firebase authenticated with custom token")
+                    } catch {
+                        print("⚠️ Firebase auth failed but user logged in: \(error)")
+                    }
+                }
+            }
+            #endif
         } catch {
-            errorMessage = "Login failed: \(error.localizedDescription)"
-            print("❌ Firebase magic link verification error: \(error)")
+            if let networkError = error as? NetworkManager.NetworkError {
+                switch networkError {
+                case .serverError(let message):
+                    errorMessage = message
+                case .unauthorized:
+                    errorMessage = "Invalid or expired verification code"
+                default:
+                    errorMessage = "Verification failed. Please try again."
+                }
+            } else {
+                errorMessage = "Verification failed. Please try again."
+            }
+            print("❌ OTP verification error: \(error)")
         }
     }
+    
 
-    // Deprecated or replaced: verifyMagicLinkToken (previous custom backend version)
-    func verifyMagicLinkToken(_ token: String) async {
-        // ... handled by verifyMagicLink(url:) now for Firebase
-    }
     
     func signInWithApple(authorization: ASAuthorization) {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
@@ -377,25 +387,6 @@ final class AuthenticationManager: ObservableObject {
             .replacingOccurrences(of: ".", with: " ")
             .capitalized
         return name
-    }
-    
-    // MARK: - Development Helpers
-    
-    /// DEV ONLY: Skip login for testing (remove before production)
-    func skipLogin() {
-        let demoUser = User(
-            id: "dev-\(UUID().uuidString)",
-            email: "demo@etherworld.co",
-            name: "Demo User",
-            authProvider: .email
-        )
-        
-        let token = UUID().uuidString
-        _ = KeychainHelper.shared.save(token, forKey: tokenKey)
-        saveUserData(demoUser)
-        isAuthenticated = true
-        currentUser = demoUser
-        print("🔧 DEV: Skipped login with demo user")
     }
     
     // MARK: - Apple Sign-In Helpers

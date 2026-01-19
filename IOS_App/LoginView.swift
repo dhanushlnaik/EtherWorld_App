@@ -4,10 +4,19 @@ import AuthenticationServices
 struct LoginView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @State private var email: String = ""
+    @State private var otp: String = ""
     @State private var showingSuccess: Bool = false
-    @State private var showMagicLinkAlert: Bool = false
+    @State private var showOTPField: Bool = false
+    @State private var resendAvailableAt: Date = .distantPast
+    @State private var now: Date = Date()
     @FocusState private var isEmailFocused: Bool
+    @FocusState private var isOTPFocused: Bool
     @AppStorage("newsletterOptIn") private var newsletterOptIn: Bool = false
+
+    private let resendCooldownSeconds: TimeInterval = 30
+    private var resendSecondsRemaining: Int {
+        max(0, Int(resendAvailableAt.timeIntervalSince(now)).advanced(by: 0))
+    }
     
     var body: some View {
         ZStack {
@@ -40,6 +49,8 @@ struct LoginView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, 32)
                 .padding(.top, 40)
                 
                 Spacer()
@@ -106,26 +117,68 @@ struct LoginView: View {
                     
                     // Email Sign In
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("login.email.title")
+                        Text(showOTPField ? "Enter Verification Code" : "login.email.title")
                             .font(.headline)
                             .foregroundColor(.primary)
                         
-                        TextField("login.email.placeholder", text: $email)
-                            .textContentType(.emailAddress)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .focused($isEmailFocused)
+                        if !showOTPField {
+                            TextField("login.email.placeholder", text: $email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .focused($isEmailFocused)
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                            
+                            Text("We'll send you a verification code")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            // Show email as read-only
+                            HStack {
+                                Text(email)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Button("Change") {
+                                    showOTPField = false
+                                    otp = ""
+                                    authManager.errorMessage = nil
+                                }
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                            }
                             .padding()
-                            .background(Color(.systemBackground))
+                            .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                        
-                        Text("login.email.note")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            
+                            // OTP Input
+                            TextField("Enter 6-digit code", text: $otp)
+                                .textContentType(.oneTimeCode)
+                                .keyboardType(.numberPad)
+                                .focused($isOTPFocused)
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                                .onChange(of: otp) { _, newValue in
+                                    // Limit to 6 digits
+                                    if newValue.count > 6 {
+                                        otp = String(newValue.prefix(6))
+                                    }
+                                }
+                            
+                            Text("Code sent to \(email)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
 
                         Toggle(isOn: $newsletterOptIn) {
                             VStack(alignment: .leading, spacing: 2) {
@@ -142,14 +195,27 @@ struct LoginView: View {
                     
                     Button {
                         isEmailFocused = false
+                        isOTPFocused = false
                         Task {
                             authManager.errorMessage = nil
-                            authManager.showMagicLinkSent = false
-                            await authManager.sendMagicLink(email: email)
-                            if authManager.isAuthenticated {
-                                showSuccess()
-                            } else if authManager.showMagicLinkSent {
-                                showMagicLinkAlert = true
+                            
+                            if !showOTPField {
+                                // Send OTP
+                                await authManager.sendOTP(email: email)
+                                if authManager.otpSent {
+                                    showOTPField = true
+                                    resendAvailableAt = Date().addingTimeInterval(resendCooldownSeconds)
+                                    // Auto-focus OTP field
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        isOTPFocused = true
+                                    }
+                                }
+                            } else {
+                                // Verify OTP
+                                await authManager.verifyOTP(email: email, code: otp)
+                                if authManager.isAuthenticated {
+                                    showSuccess()
+                                }
                             }
                         }
                     } label: {
@@ -158,17 +224,35 @@ struct LoginView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text("login.continue")
+                                Text(showOTPField ? "Verify Code" : "login.continue")
                                     .fontWeight(.semibold)
                             }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(email.isEmpty ? Color.gray : Color.blue)
+                        .background((showOTPField ? otp.count != 6 : email.isEmpty) ? Color.gray : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(12)
                     }
-                    .disabled(email.isEmpty || authManager.isLoading)
+                    .disabled((showOTPField ? otp.count != 6 : email.isEmpty) || authManager.isLoading)
+                    
+                    // Resend OTP button
+                    if showOTPField {
+                        Button {
+                            Task {
+                                otp = ""
+                                await authManager.sendOTP(email: email)
+                                if authManager.otpSent {
+                                    resendAvailableAt = Date().addingTimeInterval(resendCooldownSeconds)
+                                }
+                            }
+                        } label: {
+                            Text(resendSecondsRemaining > 0 ? "Resend in \(resendSecondsRemaining)s" : "Resend Code")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                        .disabled(authManager.isLoading || resendSecondsRemaining > 0)
+                    }
                     
                     if let error = authManager.errorMessage {
                         HStack {
@@ -183,21 +267,6 @@ struct LoginView: View {
                         .cornerRadius(8)
                     }
                     
-                    // DEV: Skip login button (remove before production)
-                    Button {
-                        authManager.skipLogin()
-                    } label: {
-                        HStack {
-                            Image(systemName: "arrow.right.circle.fill")
-                            Text("Skip Login (Dev Mode)")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.orange.opacity(0.8))
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                    }
-                    .padding(.top, 8)
                 }
                 .padding(.horizontal, 32)
                 
@@ -239,16 +308,12 @@ struct LoginView: View {
                 .transition(.opacity)
             }
         }
-        .alert("Magic Link Sent!", isPresented: $showMagicLinkAlert) {
-            Button("OK", role: .cancel) {
-                showMagicLinkAlert = false
-            }
-        } message: {
-            Text("We've sent a magic link to \(email). Please check your Gmail inbox and click the link to sign in.")
-        }
         .onAppear {
             // Clear any stale errors when the login screen is shown
             authManager.errorMessage = nil
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { value in
+            now = value
         }
         .animation(.easeInOut, value: showingSuccess)
     }

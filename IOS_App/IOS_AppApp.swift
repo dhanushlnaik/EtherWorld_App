@@ -129,11 +129,6 @@ struct IOS_AppApp: App {
                 #if canImport(FirebaseAuth)
                 if Auth.auth().canHandle(url) {
                     print("🔗 Handling Firebase OAuth callback: \(url)")
-                } else {
-                    // Check if it's a magic link
-                    Task {
-                        await authManager.verifyMagicLink(url: url)
-                    }
                 }
                 #endif
             }
