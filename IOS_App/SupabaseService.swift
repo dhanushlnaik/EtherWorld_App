@@ -7,14 +7,24 @@ final class SupabaseService {
     private init() {}
     
     // TODO: Move these secrets into a secure config (not source control).
-    private let supabaseURL = URL(string: "https://enlobybupevetrtfzomu.supabase.co")
-    private let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVubG9ieWJ1cGV2ZXRydGZ6b211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NzI3NDUsImV4cCI6MjA4NDA0ODc0NX0.5lZCR_WygSfcdS3TjZcQcqiETtorvK6ZWLpbT4O_zAA"
+    private let supabaseURL = URL(string: Configuration.supabaseURL)
+    private let supabaseAnonKey = Configuration.supabaseAnonKey
     
     struct EmailRecord: Encodable {
         let email: String
         let name: String?
         let status: String = "pending"
         let last_sent_at: Date = Date()
+    }
+
+    struct UserPreferences: Codable {
+        let userId: String
+        let notificationsEnabled: Bool
+        let appTheme: String
+        let analyticsEnabled: Bool
+        let newsletterOptIn: Bool
+        let appLanguage: String
+        let lastUpdated: Date
     }
     
     func logEmail(email: String, name: String?) async {
@@ -25,7 +35,7 @@ final class SupabaseService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(supabaseAnonKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("upsert", forHTTPHeaderField: "Prefer") // prefer: resolution=merge-duplicates is implied for unique keys
+        request.setValue("upsert", forHTTPHeaderField: "Prefer")
         
         let payload = [EmailRecord(email: email.lowercased(), name: name)]
         let encoder = JSONEncoder()
@@ -33,13 +43,27 @@ final class SupabaseService {
         request.httpBody = try? encoder.encode(payload)
         
         do {
-            let (_, response) = try await URLSession.shared.data(for: request)
-            guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-                return
-            }
+            _ = try await URLSession.shared.data(for: request)
         } catch {
-            // Swallow errors to avoid blocking auth flows.
             return
         }
+    }
+
+    func syncUserPreferences(_ prefs: UserPreferences) async {
+        guard let baseURL = supabaseURL else { return }
+        let endpoint = baseURL.appendingPathComponent("rest/v1/user_preferences")
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(supabaseAnonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("upsert", forHTTPHeaderField: "Prefer")
+        request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        request.httpBody = try? encoder.encode([prefs])
+
+        _ = try? await URLSession.shared.data(for: request)
     }
 }

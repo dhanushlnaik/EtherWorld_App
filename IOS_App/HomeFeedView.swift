@@ -220,43 +220,73 @@ struct LoadingFeedView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(Date().formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
-                    Text("home.today")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(width: 100, height: 12)
+                        .shimmer()
+                    
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 200, height: 32)
+                        .shimmer()
                 }
                 .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    ZStack {
-                        LinearGradient(
-                            colors: [Color.gray.opacity(0.1), Color.gray.opacity(0.2), Color.gray.opacity(0.1)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    }
-                    .frame(height: 200)
-                    .cornerRadius(16)
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(height: 200)
+                        .shimmer()
                     
                     VStack(alignment: .leading, spacing: 8) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.gray.opacity(0.2))
                             .frame(width: 80, height: 12)
+                            .shimmer()
                         
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.gray.opacity(0.2))
                             .frame(height: 20)
+                            .shimmer()
                         
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.gray.opacity(0.2))
                             .frame(height: 14)
                             .frame(width: 250)
+                            .shimmer()
                     }
                 }
                 .padding(.horizontal)
+                
+                // Add a few more rows
+                ForEach(0..<3) { _ in
+                    HStack(alignment: .top, spacing: 12) {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(width: 80, height: 80)
+                            .shimmer()
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.1))
+                                .frame(width: 60, height: 10)
+                                .shimmer()
+                            
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 16)
+                                .shimmer()
+                            
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.1))
+                                .frame(width: 150, height: 10)
+                                .shimmer()
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                }
             }
             .padding(.top)
         }
@@ -275,6 +305,7 @@ struct HomeFeedView: View {
         NavigationStack(path: $navigationPath) {
             contentView
                 .navigationBarTitleDisplayMode(.inline)
+                .searchable(text: $viewModel.searchText, prompt: "Search articles")
                 .task {
                     if notificationsEnabled {
                         NotificationManager.shared.checkForNewArticles(articles: viewModel.articles)
@@ -291,7 +322,9 @@ struct HomeFeedView: View {
     
     @ViewBuilder
     private var contentView: some View {
-        if viewModel.isLoading && viewModel.articles.isEmpty {
+        if !viewModel.searchText.isEmpty {
+            searchListView
+        } else if viewModel.isLoading && viewModel.articles.isEmpty {
             LoadingFeedView()
         } else if let error = viewModel.errorMessage, viewModel.articles.isEmpty {
             ErrorStateView(
@@ -303,6 +336,20 @@ struct HomeFeedView: View {
             EmptyFeedView(onRefresh: { await viewModel.load() })
         } else {
             feedContentView
+        }
+    }
+
+    private var searchListView: some View {
+        List(viewModel.searchResults) { article in
+            NavigationLink(value: article) {
+                TopStoryRow(article: article)
+            }
+        }
+        .listStyle(.plain)
+        .overlay {
+            if viewModel.searchResults.isEmpty && viewModel.searchText.count >= 2 {
+                ContentUnavailableView.search(text: viewModel.searchText)
+            }
         }
     }
     

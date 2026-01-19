@@ -11,6 +11,7 @@ final class AuthenticationManager: ObservableObject {
     @Published private(set) var currentUser: User?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var showMagicLinkSent: Bool = false
     
     private let tokenKey = "authToken"
     private let userKey = "currentUser"
@@ -33,16 +34,23 @@ final class AuthenticationManager: ObservableObject {
     
     init() {
         checkAuthStatus()
-        #if canImport(FirebaseAuth)
-        setupFirebaseAuthListener()
-        #endif
+        // Firebase listener will be set up after Firebase.configure() is called
     }
     
     #if canImport(FirebaseAuth)
     private var authStateListener: AuthStateDidChangeListenerHandle?
     
-    private func setupFirebaseAuthListener() {
-        authStateListener = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+    func setupFirebaseAuthListener() {
+        // Only set up listener if not already configured
+        guard authStateListener == nil else { return }
+        
+        // Check if Firebase is configured before accessing Auth
+        guard FirebaseAuth.Auth.auth().app != nil else {
+            print("⚠️ Firebase not yet configured, skipping Auth listener setup")
+            return
+        }
+        
+        authStateListener = FirebaseAuth.Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
             Task { @MainActor [weak self] in
                 if let firebaseUser = firebaseUser {
                     self?.handleFirebaseUser(firebaseUser)
@@ -85,7 +93,7 @@ final class AuthenticationManager: ObservableObject {
     
     deinit {
         if let listener = authStateListener {
-            Auth.auth().removeStateDidChangeListener(listener)
+            FirebaseAuth.Auth.auth().removeStateDidChangeListener(listener)
         }
     }
     #endif
@@ -121,10 +129,11 @@ final class AuthenticationManager: ObservableObject {
         actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier ?? "com.etherworld.app")
         
         do {
-            try await Auth.auth().sendSignInLink(toEmail: trimmed, actionCodeSettings: actionCodeSettings)
+            try await FirebaseAuth.Auth.auth().sendSignInLink(toEmail: trimmed, actionCodeSettings: actionCodeSettings)
             // Save email for link verification
             UserDefaults.standard.set(trimmed, forKey: "emailForSignIn")
             print("✅ Magic link sent via Firebase to \(trimmed)")
+            showMagicLinkSent = true
         } catch {
             errorMessage = "Failed to send magic link: \(error.localizedDescription)"
             print("❌ Firebase magic link error: \(error)")
@@ -149,31 +158,39 @@ final class AuthenticationManager: ObservableObject {
         #endif
     }
     
-    func verifyMagicLinkToken(_ token: String) async {
+    func verifyMagicLink(url: URL) async {
+        let link = url.absoluteString
+        
+        // Note: isSignInWithEmailLink check omitted to resolve compiler ambiguity with FirebaseAuth.Auth
+        // The signIn(withEmail:link:) method below will naturally validate the link.
+        guard link.contains("oobCode") else {
+            errorMessage = "Invalid login link"
+            return
+        }
+
+        guard let email = UserDefaults.standard.string(forKey: "emailForSignIn") else {
+            errorMessage = "Could not find original email for verification"
+            return
+        }
+
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-        
+
         do {
-            let response = try await NetworkManager.shared.verifyMagicLink(token: token)
-            
-            let user = User(
-                id: response.user.id,
-                email: response.user.email,
-                name: response.user.name,
-                authProvider: .email
-            )
-            
-            if KeychainHelper.shared.save(response.token, forKey: tokenKey) {
-                saveUserData(user)
-                isAuthenticated = true
-                currentUser = user
-            } else {
-                errorMessage = "Failed to save authentication token"
-            }
+            let result = try await FirebaseAuth.Auth.auth().signIn(withEmail: email, link: link)
+            print("✅ Successfully signed in with magic link: \(result.user.email ?? email)")
+            // The Firebase listener setup in init() will catch this sign-in and update isAuthenticated/currentUser
+            UserDefaults.standard.removeObject(forKey: "emailForSignIn")
         } catch {
-            errorMessage = "Invalid or expired magic link"
+            errorMessage = "Login failed: \(error.localizedDescription)"
+            print("❌ Firebase magic link verification error: \(error)")
         }
+    }
+
+    // Deprecated or replaced: verifyMagicLinkToken (previous custom backend version)
+    func verifyMagicLinkToken(_ token: String) async {
+        // ... handled by verifyMagicLink(url:) now for Firebase
     }
     
     func signInWithApple(authorization: ASAuthorization) {
@@ -208,7 +225,7 @@ final class AuthenticationManager: ObservableObject {
             defer { isLoading = false }
             
             do {
-                let result = try await Auth.auth().signIn(with: credential)
+                let result = try await FirebaseAuth.Auth.auth().signIn(with: credential)
                 print("✅ Apple Sign-In successful via Firebase: \(result.user.email ?? "no email")")
                 // Firebase listener will handle the rest
             } catch {
@@ -272,7 +289,7 @@ final class AuthenticationManager: ObservableObject {
                 }
             }
 
-            let authResult = try await Auth.auth().signIn(with: credential)
+            let authResult = try await FirebaseAuth.Auth.auth().signIn(with: credential)
 
             await MainActor.run {
                 isLoading = false
@@ -302,8 +319,9 @@ final class AuthenticationManager: ObservableObject {
     
     func logout() {
         #if canImport(FirebaseAuth)
+        AnalyticsManager.shared.log(.logout)
         do {
-            try Auth.auth().signOut()
+            try FirebaseAuth.Auth.auth().signOut()
             print("✅ Firebase sign-out successful")
         } catch {
             print("❌ Firebase sign-out error: \(error)")
@@ -314,6 +332,30 @@ final class AuthenticationManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: userKey)
         isAuthenticated = false
         currentUser = nil
+    }
+
+    func deleteAccount() async {
+        #if canImport(FirebaseAuth)
+        guard let user = FirebaseAuth.Auth.auth().currentUser else { return }
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            try await user.delete()
+            print("✅ Account deleted successfully from Firebase")
+            logout()
+        } catch {
+            errorMessage = "Deletion failed: \(error.localizedDescription)"
+            print("❌ Firebase account deletion error: \(error)")
+            
+            // If it requires recent login, show specific error
+            if (error as NSError).code == AuthErrorCode.requiresRecentLogin.rawValue {
+                errorMessage = "Please sign out and sign back in before deleting your account for security reasons."
+            }
+        }
+        #else
+        logout()
+        #endif
     }
     
     private func loadUserData() {
@@ -335,6 +377,25 @@ final class AuthenticationManager: ObservableObject {
             .replacingOccurrences(of: ".", with: " ")
             .capitalized
         return name
+    }
+    
+    // MARK: - Development Helpers
+    
+    /// DEV ONLY: Skip login for testing (remove before production)
+    func skipLogin() {
+        let demoUser = User(
+            id: "dev-\(UUID().uuidString)",
+            email: "demo@etherworld.co",
+            name: "Demo User",
+            authProvider: .email
+        )
+        
+        let token = UUID().uuidString
+        _ = KeychainHelper.shared.save(token, forKey: tokenKey)
+        saveUserData(demoUser)
+        isAuthenticated = true
+        currentUser = demoUser
+        print("🔧 DEV: Skipped login with demo user")
     }
     
     // MARK: - Apple Sign-In Helpers

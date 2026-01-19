@@ -139,17 +139,19 @@ struct ProfileSettingsView: View {
     }
     
     private func deleteAccount() {
-        // Clear all local data
-        UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
-        _ = KeychainHelper.shared.delete(forKey: "authToken")
-        
-        // Clear caches
-        URLCache.shared.removeAllCachedResponses()
-        let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        try? FileManager.default.removeItem(at: cacheURL.appendingPathComponent("articles-cache.json"))
-        
-        // Logout
-        authManager.logout()
+        Task {
+            // Clear all local data
+            UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+            _ = KeychainHelper.shared.delete(forKey: "authToken")
+            
+            // Clear caches
+            URLCache.shared.removeAllCachedResponses()
+            let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            try? FileManager.default.removeItem(at: cacheURL.appendingPathComponent("articles-cache.json"))
+            
+            // Logout & Delete from Firebase
+            await authManager.deleteAccount()
+        }
     }
 }
 

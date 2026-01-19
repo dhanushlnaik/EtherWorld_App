@@ -22,14 +22,15 @@ struct PrivacyPolicyView: View {
                             Text("EtherWorld collects minimal data:")
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                BulletPoint(text: "Saved articles list (stored locally on your device)")
+                                BulletPoint(text: "Saved articles list")
+                                BulletPoint(text: "App preferences (theme, language)")
                                 BulletPoint(text: "Last updated timestamp for refresh tracking")
-                                BulletPoint(text: "Notification preferences (on/off)")
-                                BulletPoint(text: "Dark mode preference")
+                                BulletPoint(text: "Notification preferences")
+                                BulletPoint(text: "Anonymous analytics (opt-in)")
                             }
                             .padding(.top, 8)
                             
-                            Text("We do not track personal information, browsing history, or send data to third-party servers beyond fetching articles from Ghost CMS.")
+                            Text("Your preferences and saved articles are synced to our secure backend to provide a consistent experience across your devices.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 8)
@@ -85,7 +86,7 @@ struct PrivacyPolicyView: View {
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("You can optionally enable anonymous crash reporting and diagnostics in Settings to help improve the app. This is opt-in and disabled by default.")
+                            Text("We use anonymous analytics and crash reporting to improve the app. This data is not linked to your identity. You can disable this anytime in Settings.")
                                 .font(.body)
                         }
                     }

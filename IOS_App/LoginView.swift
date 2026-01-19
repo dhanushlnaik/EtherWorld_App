@@ -5,6 +5,7 @@ struct LoginView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @State private var email: String = ""
     @State private var showingSuccess: Bool = false
+    @State private var showMagicLinkAlert: Bool = false
     @FocusState private var isEmailFocused: Bool
     @AppStorage("newsletterOptIn") private var newsletterOptIn: Bool = false
     
@@ -23,14 +24,15 @@ struct LoginView: View {
                 
                 // Logo/Icon
                 VStack(spacing: 16) {
-                    Image(systemName: "newspaper.circle.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(.blue)
-                        .shadow(color: .blue.opacity(0.3), radius: 10)
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     
                     Text("app.name")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.system(size: 36, weight: .bold, design: .default))
                     
                     Text("login.tagline")
                         .font(.subheadline)
@@ -38,6 +40,7 @@ struct LoginView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
+                .padding(.top, 40)
                 
                 Spacer()
                 
@@ -141,9 +144,12 @@ struct LoginView: View {
                         isEmailFocused = false
                         Task {
                             authManager.errorMessage = nil
+                            authManager.showMagicLinkSent = false
                             await authManager.sendMagicLink(email: email)
                             if authManager.isAuthenticated {
                                 showSuccess()
+                            } else if authManager.showMagicLinkSent {
+                                showMagicLinkAlert = true
                             }
                         }
                     } label: {
@@ -176,6 +182,22 @@ struct LoginView: View {
                         .background(Color.red.opacity(0.1))
                         .cornerRadius(8)
                     }
+                    
+                    // DEV: Skip login button (remove before production)
+                    Button {
+                        authManager.skipLogin()
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.right.circle.fill")
+                            Text("Skip Login (Dev Mode)")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.orange.opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.horizontal, 32)
                 
@@ -216,6 +238,13 @@ struct LoginView: View {
                 }
                 .transition(.opacity)
             }
+        }
+        .alert("Magic Link Sent!", isPresented: $showMagicLinkAlert) {
+            Button("OK", role: .cancel) {
+                showMagicLinkAlert = false
+            }
+        } message: {
+            Text("We've sent a magic link to \(email). Please check your Gmail inbox and click the link to sign in.")
         }
         .onAppear {
             // Clear any stale errors when the login screen is shown

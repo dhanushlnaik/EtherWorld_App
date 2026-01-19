@@ -172,7 +172,7 @@ struct ArticleDetailView: View {
                 isSaved = article.isSaved
                 isRead = article.isRead
                 // Mark as read when user opens the article
-                viewModel.markAsRead(article: article)
+                self.viewModel.markAsRead(article: article)
                 AnalyticsManager.shared.log(.articleOpen, params: ["id": article.id])
             }
             .task {

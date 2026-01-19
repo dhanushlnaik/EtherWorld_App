@@ -59,7 +59,7 @@ struct GhostArticleService: PaginatedArticleService {
     private let session: URLSession
     @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
-    init(baseURL: String = "https://etherworld.co", apiKey: String = "5b9aefe2ea7623b8fd81c52dec") {
+    init(baseURL: String = Configuration.ghostBaseURL, apiKey: String = Configuration.ghostAPIKey) {
         self.baseURL = baseURL
         self.apiKey = apiKey
         let config = URLSessionConfiguration.default
@@ -73,6 +73,13 @@ struct GhostArticleService: PaginatedArticleService {
         self.session = URLSession(configuration: config)
     }
     
+    func searchArticles(query: String) async throws -> [Article] {
+        let languageTag = "lang-\(appLanguageCode)"
+        // Ghost CMS filter syntax for search (approximated)
+        let filter = "tag:\(languageTag)+(title:~'\(query)'|custom_excerpt:~'\(query)')"
+        return try await fetchArticlesWithFilter(filter, page: 1, limit: 20)
+    }
+
     func fetchArticles() async throws -> [Article] {
         return try await fetchArticles(page: 1, limit: 100)
     }
@@ -81,35 +88,17 @@ struct GhostArticleService: PaginatedArticleService {
         // Build language filter tag - format: tag:lang-es
         let languageTag = "lang-\(appLanguageCode)"
         let filter = "tag:\(languageTag)"
-        let encodedFilter = filter.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? filter
         
-        var urlString = "\(baseURL)/ghost/api/v3/content/posts/?key=\(apiKey)&include=authors,tags&fields=id,title,html,excerpt,custom_excerpt,feature_image,published_at,reading_time&page=\(page)&limit=\(limit)&order=published_at%20desc&filter=\(encodedFilter)"
-        
-        print("🌐 Fetching articles with language filter: \(languageTag)")
-        
-        guard let url = URL(string: urlString) else {
-            throw ServiceError.invalidURL
-        }
-        
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw ServiceError.networkError
-        }
-        
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        
-        let ghostResponse = try decoder.decode(GhostResponse.self, from: data)
+        let articles = try await fetchArticlesWithFilter(filter, page: page, limit: limit)
         
         // If no articles found for selected language, try fallback strategies
-        if ghostResponse.posts.isEmpty {
+        if articles.isEmpty {
             print("⚠️ No articles found for language '\(appLanguageCode)'")
             
             // First try English if not already tried
             if appLanguageCode != "en" {
                 print("   → Trying English articles...")
-                let englishArticles = try await fetchArticlesInLanguage(page: page, limit: limit, languageCode: "en")
+                let englishArticles = try await fetchArticlesWithFilter("tag:lang-en", page: page, limit: limit)
                 if !englishArticles.isEmpty {
                     return englishArticles
                 }
@@ -117,60 +106,19 @@ struct GhostArticleService: PaginatedArticleService {
             
             // If still no articles, fetch without language filter (all articles)
             print("   → Fetching all articles without language filter")
-            return try await fetchArticlesWithoutFilter(page: page, limit: limit)
+            return try await fetchArticlesWithFilter(nil, page: page, limit: limit)
         }
         
-        print("✅ Found \(ghostResponse.posts.count) articles for language '\(appLanguageCode)'")
-        
-        return ghostResponse.posts.map { post in
-            let coverImage = post.feature_image
-            let authorName = post.authors?.first?.name
-            let authorSlug = post.authors?.first?.slug
-            let authorProfileImage = post.authors?.first?.profile_image
-            let tagNames = post.tags?.map { $0.name } ?? []
-            
-            // Use custom_excerpt if available, fallback to excerpt, then generate from HTML
-            let excerpt: String = {
-                if let customExcerpt = post.custom_excerpt, !customExcerpt.isEmpty {
-                    return customExcerpt
-                }
-                if let autoExcerpt = post.excerpt, !autoExcerpt.isEmpty {
-                    return autoExcerpt
-                }
-                // Fallback: strip HTML and create excerpt
-                let plainText = post.html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                if plainText.count <= 200 {
-                    return plainText
-                }
-                // Find the last complete word within 200 chars
-                let truncated = String(plainText.prefix(200))
-                if let lastSpace = truncated.lastIndex(of: " ") {
-                    return String(truncated[..<lastSpace]) + "..."
-                }
-                return truncated + "..."
-            }()
-            
-            return Article(
-                id: post.id,
-                title: post.title,
-                excerpt: excerpt,
-                contentHTML: post.html,
-                publishedAt: post.published_at,
-                url: "\(baseURL)/\(post.id)",
-                author: authorName,
-                authorSlug: authorSlug,
-                authorProfileImage: authorProfileImage.flatMap { URL(string: $0) },
-                imageURL: coverImage.flatMap { URL(string: $0) },
-                tags: tagNames,
-                readingTimeMinutes: post.reading_time
-            )
-        }
+        return articles
     }
 
-    // Fetch articles without language filter (all articles)
-    private func fetchArticlesWithoutFilter(page: Int, limit: Int) async throws -> [Article] {
-        let urlString = "\(baseURL)/ghost/api/v3/content/posts/?key=\(apiKey)&include=authors,tags&fields=id,title,html,excerpt,custom_excerpt,feature_image,published_at,reading_time&page=\(page)&limit=\(limit)&order=published_at%20desc"
+    private func fetchArticlesWithFilter(_ filter: String?, page: Int, limit: Int) async throws -> [Article] {
+        var urlString = "\(baseURL)/ghost/api/v3/content/posts/?key=\(apiKey)&include=authors,tags&fields=id,title,html,excerpt,custom_excerpt,feature_image,published_at,reading_time&page=\(page)&limit=\(limit)&order=published_at%20desc"
+        
+        if let filter = filter {
+            let encodedFilter = filter.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? filter
+            urlString += "&filter=\(encodedFilter)"
+        }
         
         guard let url = URL(string: urlString) else {
             throw ServiceError.invalidURL
@@ -187,12 +135,6 @@ struct GhostArticleService: PaginatedArticleService {
         
         let ghostResponse = try decoder.decode(GhostResponse.self, from: data)
         return ghostResponse.posts.map { post in
-            let coverImage = post.feature_image
-            let authorName = post.authors?.first?.name
-            let authorSlug = post.authors?.first?.slug
-            let authorProfileImage = post.authors?.first?.profile_image
-            let tagNames = post.tags?.map { $0.name } ?? []
-            
             let excerpt: String = {
                 if let customExcerpt = post.custom_excerpt, !customExcerpt.isEmpty {
                     return customExcerpt
@@ -219,76 +161,11 @@ struct GhostArticleService: PaginatedArticleService {
                 contentHTML: post.html,
                 publishedAt: post.published_at,
                 url: "\(baseURL)/\(post.id)",
-                author: authorName,
-                authorSlug: authorSlug,
-                authorProfileImage: authorProfileImage.flatMap { URL(string: $0) },
-                imageURL: coverImage.flatMap { URL(string: $0) },
-                tags: tagNames,
-                readingTimeMinutes: post.reading_time
-            )
-        }
-    }
-
-    // Private helper to fetch articles in a specific language
-    private func fetchArticlesInLanguage(page: Int, limit: Int, languageCode: String) async throws -> [Article] {
-        let languageTag = "lang-\(languageCode)"
-        let filter = "tag:\(languageTag)"
-        let encodedFilter = filter.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? filter
-        
-        let urlString = "\(baseURL)/ghost/api/v3/content/posts/?key=\(apiKey)&include=authors,tags&fields=id,title,html,excerpt,custom_excerpt,feature_image,published_at,reading_time&page=\(page)&limit=\(limit)&order=published_at%20desc&filter=\(encodedFilter)"
-        
-        guard let url = URL(string: urlString) else {
-            throw ServiceError.invalidURL
-        }
-        
-        let (data, response) = try await session.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw ServiceError.networkError
-        }
-        
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        
-        let ghostResponse = try decoder.decode(GhostResponse.self, from: data)
-        return ghostResponse.posts.map { post in
-            let coverImage = post.feature_image
-            let authorName = post.authors?.first?.name
-            let authorSlug = post.authors?.first?.slug
-            let authorProfileImage = post.authors?.first?.profile_image
-            let tagNames = post.tags?.map { $0.name } ?? []
-            
-            let excerpt: String = {
-                if let customExcerpt = post.custom_excerpt, !customExcerpt.isEmpty {
-                    return customExcerpt
-                }
-                if let autoExcerpt = post.excerpt, !autoExcerpt.isEmpty {
-                    return autoExcerpt
-                }
-                let plainText = post.html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                if plainText.count <= 200 {
-                    return plainText
-                }
-                let truncated = String(plainText.prefix(200))
-                if let lastSpace = truncated.lastIndex(of: " ") {
-                    return String(truncated[..<lastSpace]) + "..."
-                }
-                return truncated + "..."
-            }()
-            
-            return Article(
-                id: post.id,
-                title: post.title,
-                excerpt: excerpt,
-                contentHTML: post.html,
-                publishedAt: post.published_at,
-                url: "\(baseURL)/\(post.id)",
-                author: authorName,
-                authorSlug: authorSlug,
-                authorProfileImage: authorProfileImage.flatMap { URL(string: $0) },
-                imageURL: coverImage.flatMap { URL(string: $0) },
-                tags: tagNames,
+                author: post.authors?.first?.name,
+                authorSlug: post.authors?.first?.slug,
+                authorProfileImage: post.authors?.first?.profile_image.flatMap { URL(string: $0) },
+                imageURL: post.feature_image.flatMap { URL(string: $0) },
+                tags: post.tags?.map { $0.name } ?? [],
                 readingTimeMinutes: post.reading_time
             )
         }
@@ -310,4 +187,5 @@ struct GhostArticleService: PaginatedArticleService {
         return single.posts.first?.html ?? ""
     }
 }
+
 

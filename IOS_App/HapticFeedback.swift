@@ -1,6 +1,13 @@
 import UIKit
 
 struct HapticFeedback {
+    static let shared = HapticFeedback()
+    private init() {}
+
+    func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+
     static func light() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }

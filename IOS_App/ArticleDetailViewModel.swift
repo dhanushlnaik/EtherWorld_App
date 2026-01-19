@@ -30,7 +30,8 @@ final class ArticleDetailViewModel: ObservableObject {
                     imageURL: article.imageURL,
                     tags: article.tags,
                     readingTimeMinutes: article.readingTimeMinutes,
-                    isSaved: article.isSaved
+                    isSaved: article.isSaved,
+                    isRead: article.isRead
                 )
             }
         } catch {

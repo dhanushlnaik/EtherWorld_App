@@ -14,25 +14,68 @@ final class ArticleViewModel: ObservableObject {
     
     private let service: ArticleService
     private let paginatedService: PaginatedArticleService?
-    private let saveKey = "savedArticles"
+    private let saveKey = "savedArticlesIds"
+    private let savedArticlesListKey = "savedArticlesList"
     private let readKey = "readArticles"
     private let lastUpdatedKey = "lastArticlesUpdate"
     private var currentPage: Int = 1
     private let pageSize: Int = 50
     private var languageObserver: AnyCancellable?
+    
     private let cacheURL: URL = {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         return caches.appendingPathComponent("articles-cache.json")
     }()
     
+    private let savedArticlesURL: URL = {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return docs.appendingPathComponent("saved-articles.json")
+    }()
+    
+    @Published private(set) var fullSavedArticles: [Article] = []
+    @Published private(set) var searchResults: [Article] = []
+    @Published var searchText: String = ""
+    
+    private var searchCancellable: AnyCancellable?
+    
     init(service: ArticleService = ServiceFactory.makeArticleService(environment: .production)) {
         self.service = service
         self.paginatedService = service as? PaginatedArticleService
         loadCachedArticles()
+        loadSavedArticlesFromFile()
         loadSavedState()
         loadReadState()
         loadLastUpdated()
         setupLanguageObserver()
+        setupSearch()
+    }
+    
+    private func setupSearch() {
+        searchCancellable = $searchText
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] query in
+                if query.count >= 2 {
+                    Task { [weak self] in
+                        await self?.performSearch(query: query)
+                    }
+                } else {
+                    self?.searchResults = []
+                }
+            }
+    }
+    
+    private func performSearch(query: String) async {
+        do {
+            let results = try await service.searchArticles(query: query)
+            self.searchResults = results.map { article in
+                var mutableArticle = article
+                mutableArticle.isSaved = isSaved(articleId: article.id)
+                return mutableArticle
+            }
+        } catch {
+            print("Search error: \(error)")
+        }
     }
 
     var articleService: ArticleService { service }
@@ -98,49 +141,66 @@ final class ArticleViewModel: ObservableObject {
             errorMessage = "Failed to load more articles."
         }
     }
-    
+
     func toggleSaved(article: Article) {
         if let index = articles.firstIndex(where: { $0.id == article.id }) {
             articles[index].isSaved.toggle()
-            saveSavedState()
+            let isNowSaved = articles[index].isSaved
+            
+            if isNowSaved {
+                if !fullSavedArticles.contains(where: { $0.id == article.id }) {
+                    fullSavedArticles.append(articles[index])
+                }
+            } else {
+                fullSavedArticles.removeAll(where: { $0.id == article.id })
+            }
+        } else {
+            // Article might not be in the current feed but is being toggled from elsewhere
+            if let savedIndex = fullSavedArticles.firstIndex(where: { $0.id == article.id }) {
+                fullSavedArticles.remove(at: savedIndex)
+            } else {
+                var newSaved = article
+                newSaved.isSaved = true
+                fullSavedArticles.append(newSaved)
+            }
         }
-    }
-    
-    func toggleRead(article: Article) {
-        if let index = articles.firstIndex(where: { $0.id == article.id }) {
-            articles[index].isRead.toggle()
-            saveReadState()
-        }
-    }
-    
-    func markAsRead(article: Article) {
-        if let index = articles.firstIndex(where: { $0.id == article.id }), !articles[index].isRead {
-            articles[index].isRead = true
-            saveReadState()
-        }
+        saveSavedArticlesToFile()
+        saveSavedState()
+        
+        // Haptic feedback
+        HapticFeedback.shared.impact(.light)
     }
     
     var savedArticles: [Article] {
-        articles.filter { $0.isSaved }
+        fullSavedArticles
+    }
+    
+    private func loadSavedArticlesFromFile() {
+        guard let data = try? Data(contentsOf: savedArticlesURL) else { return }
+        if let decoded = try? JSONDecoder().decode([Article].self, from: data) {
+            self.fullSavedArticles = decoded
+        }
+    }
+    
+    private func saveSavedArticlesToFile() {
+        guard let data = try? JSONEncoder().encode(fullSavedArticles) else { return }
+        try? data.write(to: savedArticlesURL)
     }
     
     private func isSaved(articleId: String) -> Bool {
-        let saved = UserDefaults.standard.stringArray(forKey: saveKey) ?? []
-        return saved.contains(articleId)
+        return fullSavedArticles.contains(where: { $0.id == articleId })
     }
     
     private func loadSavedState() {
-        // Load saved article IDs from UserDefaults
-        let saved = UserDefaults.standard.stringArray(forKey: saveKey) ?? []
-        articles = articles.map { article in
-            var mutableArticle = article
-            mutableArticle.isSaved = saved.contains(article.id)
-            return mutableArticle
+        // Just sync current feed with fullSavedArticles
+        for i in 0..<articles.count {
+            articles[i].isSaved = isSaved(articleId: articles[i].id)
         }
     }
     
     private func saveSavedState() {
-        let savedIds = articles.filter { $0.isSaved }.map { $0.id }
+        // IDs are now derived from fullSavedArticles
+        let savedIds = fullSavedArticles.map { $0.id }
         UserDefaults.standard.set(savedIds, forKey: saveKey)
     }
     
@@ -161,6 +221,22 @@ final class ArticleViewModel: ObservableObject {
     private func saveReadState() {
         let readIds = articles.filter { $0.isRead }.map { $0.id }
         UserDefaults.standard.set(readIds, forKey: readKey)
+    }
+
+    func markAsRead(article: Article) {
+        if let index = articles.firstIndex(where: { $0.id == article.id }) {
+            articles[index].isRead = true
+        }
+        if let searchIndex = searchResults.firstIndex(where: { $0.id == article.id }) {
+            searchResults[searchIndex].isRead = true
+        }
+        
+        // Persist read state
+        var readIds = UserDefaults.standard.stringArray(forKey: readKey) ?? []
+        if !readIds.contains(article.id) {
+            readIds.append(article.id)
+            UserDefaults.standard.set(readIds, forKey: readKey)
+        }
     }
 
     private func loadCachedArticles() {

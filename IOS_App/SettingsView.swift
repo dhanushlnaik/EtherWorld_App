@@ -14,13 +14,32 @@ struct SettingsView: View {
     @State private var showingLogoutConfirmation = false
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
+
     private var themeBinding: Binding<AppTheme> {
         Binding(
             get: { AppTheme(rawValue: appThemeRaw) ?? .system },
             set: { newValue in
                 appThemeRaw = newValue.rawValue
+                syncPreferences()
             }
         )
+    }
+
+    private func syncPreferences() {
+        guard let userId = authManager.currentUser?.id else { return }
+        let prefs = SupabaseService.UserPreferences(
+            userId: userId,
+            notificationsEnabled: notificationsEnabled,
+            appTheme: appThemeRaw,
+            analyticsEnabled: analyticsEnabled,
+            newsletterOptIn: newsletterOptIn,
+            appLanguage: appLanguageCode,
+            lastUpdated: Date()
+        )
+        Task {
+            await SupabaseService.shared.syncUserPreferences(prefs)
+        }
     }
     
     var body: some View {
@@ -49,10 +68,12 @@ struct SettingsView: View {
                                 if !granted {
                                     notificationsEnabled = false
                                 }
+                                syncPreferences()
                             }
                             HapticFeedback.light()
                         } else {
                             notificationManager.cancelAllNotifications()
+                            syncPreferences()
                         }
                     }
 
@@ -142,6 +163,8 @@ struct SettingsView: View {
                     }
                     .onChange(of: analyticsEnabled) { _, _ in
                         HapticFeedback.light()
+                        syncPreferences()
+                        AnalyticsManager.shared.setEnabled(analyticsEnabled)
                     }
                 } header: {
                     Text("settings.privacy.section")
@@ -166,6 +189,7 @@ struct SettingsView: View {
                     }
                     .onChange(of: newsletterOptIn) { _, _ in
                         HapticFeedback.light()
+                        syncPreferences()
                     }
                 } header: {
                     Text("settings.newsletter.section")

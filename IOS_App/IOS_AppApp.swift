@@ -17,8 +17,66 @@ import FirebaseCore
 import FirebaseAuth
 #endif
 
+#if canImport(FirebaseMessaging)
+import FirebaseMessaging
+#endif
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        // Configure Firebase before any Firebase services are used
+        #if canImport(FirebaseCore)
+        FirebaseApp.configure()
+        print("✅ Firebase configured successfully")
+        #endif
+        
+        #if canImport(FirebaseMessaging)
+        Messaging.messaging().delegate = self
+        #endif
+        
+        // Set up notification handling
+        UNUserNotificationCenter.current().delegate = NotificationManager.shared
+        
+        // Register for remote notifications
+        application.registerForRemoteNotifications()
+        
+        return true
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        // Set up Firebase Auth listener after configuration is complete
+        #if canImport(FirebaseAuth)
+        // Notify AuthenticationManager to set up listener if needed
+        NotificationCenter.default.post(name: NSNotification.Name("FirebaseConfigured"), object: nil)
+        #endif
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        #if canImport(FirebaseMessaging)
+        Messaging.messaging().apnsToken = deviceToken
+        #endif
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❌ Failed to register for remote notifications: \(error)")
+    }
+}
+
+#if canImport(FirebaseMessaging)
+extension AppDelegate: MessagingDelegate {
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        print("🚀 Firebase registration token: \(String(describing: fcmToken))")
+        // Sync token to Supabase/Backend if needed for user-targeted pushes
+        if let token = fcmToken {
+            UserDefaults.standard.set(token, forKey: "fcmToken")
+        }
+    }
+}
+#endif
+
 @main
 struct IOS_AppApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var authManager = AuthenticationManager()
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
@@ -42,27 +100,6 @@ struct IOS_AppApp: App {
         }
     }()
 
-    init() {
-        // Initialize Firebase
-        #if canImport(FirebaseCore)
-        FirebaseApp.configure()
-        print("🔥 Firebase initialized successfully")
-        #endif
-        
-        // One-time migration:
-        // - If a user previously had only the legacy `darkModeEnabled` setting, preserve it.
-        // - If neither exists (fresh install), default to system.
-        let defaults = UserDefaults.standard
-        if defaults.object(forKey: "appTheme") == nil {
-            if defaults.object(forKey: "darkModeEnabled") != nil {
-                appThemeRaw = (legacyDarkModeEnabled ? AppTheme.dark : AppTheme.light).rawValue
-            } else {
-                appThemeRaw = AppTheme.system.rawValue
-            }
-        }
-
-    }
-
     var body: some Scene {
         WindowGroup {
             Group {
@@ -81,11 +118,22 @@ struct IOS_AppApp: App {
             // Force full view swap when auth state changes so login screen appears immediately after sign-out
             .id(authManager.isAuthenticated ? "authed" : "loggedOut")
             .preferredColorScheme(resolvedTheme.preferredColorScheme)
+            .onAppear {
+                // Set up Firebase Auth listener once view appears (after Firebase is configured)
+                #if canImport(FirebaseAuth)
+                authManager.setupFirebaseAuthListener()
+                #endif
+            }
             .onOpenURL { url in
                 // Handle OAuth callbacks from Google and other providers
                 #if canImport(FirebaseAuth)
                 if Auth.auth().canHandle(url) {
                     print("🔗 Handling Firebase OAuth callback: \(url)")
+                } else {
+                    // Check if it's a magic link
+                    Task {
+                        await authManager.verifyMagicLink(url: url)
+                    }
                 }
                 #endif
             }

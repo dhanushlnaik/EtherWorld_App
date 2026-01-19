@@ -7,6 +7,15 @@ struct MockArticleService: ArticleService {
         return getMockArticles()
     }
     
+    func searchArticles(query: String) async throws -> [Article] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        let normalizedQuery = query.lowercased()
+        return getMockArticles().filter { 
+            $0.title.lowercased().contains(normalizedQuery) || 
+            $0.excerpt.lowercased().contains(normalizedQuery) 
+        }
+    }
+    
     func getMockArticles() -> [Article] {
         return [
             Article(

@@ -51,21 +51,35 @@ struct AdaptiveContentView: View {
     private var iPadLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             // Sidebar
-            List {
-                ForEach(NavigationTab.allCases, id: \.self) { tab in
-                    Button {
-                        selectedTab = tab
-                    } label: {
-                        Label {
-                            Text(LocalizedStringKey(tab.rawValue))
-                        } icon: {
-                            Image(systemName: tab.icon)
+            VStack(spacing: 0) {
+                // Sidebar Logo
+                HStack {
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 40, height: 40)
+                        .cornerRadius(8)
+                    Text("EtherWorld")
+                        .font(.headline)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                List {
+                    ForEach(NavigationTab.allCases, id: \.self) { tab in
+                        Button {
+                            selectedTab = tab
+                        } label: {
+                            Label {
+                                Text(LocalizedStringKey(tab.rawValue))
+                            } icon: {
+                                Image(systemName: tab.icon)
+                            }
                         }
+                        .listRowBackground(selectedTab == tab ? Color.blue.opacity(0.1) : Color.clear)
                     }
-                    .listRowBackground(selectedTab == tab ? Color.blue.opacity(0.1) : Color.clear)
                 }
             }
-            .navigationTitle("EtherWorld")
             .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
         } detail: {
             // Detail view based on selection
