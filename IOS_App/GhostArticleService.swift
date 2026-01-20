@@ -57,9 +57,11 @@ struct GhostArticleService: PaginatedArticleService {
     private let baseURL: String
     private let apiKey: String
     private let session: URLSession
+    private let translationService: TranslationService
     @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
-    init(baseURL: String = Configuration.ghostBaseURL, apiKey: String = Configuration.ghostAPIKey) {
+    init(baseURL: String = Configuration.ghostBaseURL, apiKey: String = Configuration.ghostAPIKey, translationService: TranslationService = ServiceFactory.makeTranslationService()) {
+        self.translationService = translationService
         self.baseURL = baseURL
         self.apiKey = apiKey
         let config = URLSessionConfiguration.default
@@ -134,7 +136,7 @@ struct GhostArticleService: PaginatedArticleService {
         decoder.dateDecodingStrategy = .iso8601
         
         let ghostResponse = try decoder.decode(GhostResponse.self, from: data)
-        return ghostResponse.posts.map { post in
+        var mapped = ghostResponse.posts.map { post in
             let excerpt: String = {
                 if let customExcerpt = post.custom_excerpt, !customExcerpt.isEmpty {
                     return customExcerpt
@@ -169,6 +171,37 @@ struct GhostArticleService: PaginatedArticleService {
                 readingTimeMinutes: post.reading_time
             )
         }
+
+        // If Ghost doesn't provide per-language posts, translate titles/excerpts to the app language
+        if appLanguageCode != "en" {
+            let titles = mapped.map { $0.title }
+            let excerpts = mapped.map { $0.excerpt }
+            do {
+                let tTitles = try await translationService.translateBatch(titles, to: appLanguageCode)
+                let tExcerpts = try await translationService.translateBatch(excerpts, to: appLanguageCode)
+                // Merge translations back into articles
+                mapped = zip(zip(mapped, tTitles), tExcerpts).map { pair in
+                    var article = pair.0.0
+                    article = Article(id: article.id,
+                                      title: pair.0.1,
+                                      excerpt: pair.1,
+                                      contentHTML: article.contentHTML,
+                                      publishedAt: article.publishedAt,
+                                      url: article.url,
+                                      author: article.author,
+                                      authorSlug: article.authorSlug,
+                                      authorProfileImage: article.authorProfileImage,
+                                      imageURL: article.imageURL,
+                                      tags: article.tags,
+                                      readingTimeMinutes: article.readingTimeMinutes)
+                    return article
+                }
+            } catch {
+                print("⚠️ Translation failed, showing original text: \(error)")
+            }
+        }
+
+        return mapped
     }
 
     // Fetch full content HTML for a specific article by id on demand
@@ -184,7 +217,20 @@ struct GhostArticleService: PaginatedArticleService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let single = try decoder.decode(SinglePostResponse.self, from: data)
-        return single.posts.first?.html ?? ""
+        let html = single.posts.first?.html ?? ""
+
+        if appLanguageCode != "en" {
+            // Try to translate the HTML content; fall back to original on error
+            do {
+                let translated = try await translationService.translate(html, to: appLanguageCode)
+                return translated
+            } catch {
+                print("⚠️ Article content translation failed: \(error)")
+                return html
+            }
+        }
+
+        return html
     }
 }
 

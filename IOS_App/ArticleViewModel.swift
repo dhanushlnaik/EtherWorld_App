@@ -86,6 +86,18 @@ final class ArticleViewModel: ObservableObject {
         currentPage = 1
         hasMoreArticles = true
         defer { isLoading = false }
+
+        // Quick connectivity check to provide clearer UX when offline
+        if !(await isOnline()) {
+            print("⚠️ No network connectivity detected")
+            if !self.articles.isEmpty {
+                self.errorMessage = "Using cached articles — no network connection"
+            } else {
+                self.errorMessage = "No network connection. Check your internet and try again."
+            }
+            return
+        }
+
         do {
             let result = try await service.fetchArticles()
             self.articles = result.map { article in
@@ -104,7 +116,40 @@ final class ArticleViewModel: ObservableObject {
             }
             SpotlightIndexer.index(articles: self.articles)
         } catch {
-            self.errorMessage = "Failed to load articles. Please try again."
+            let message = "Failed to load articles: \(error.localizedDescription)"
+            print("❌ Article load error: \(error)")
+            // If we have cached articles, keep showing them but inform user
+            if !self.articles.isEmpty {
+                self.errorMessage = "Using cached articles — network error: \(error.localizedDescription)"
+            } else {
+                self.errorMessage = message
+            }
+        }
+    }
+
+    /// Tries a quick request to the Ghost base URL to check connectivity and provides richer diagnostics
+    private func isOnline(timeout: TimeInterval = 6.0) async -> Bool {
+        guard let url = URL(string: Configuration.ghostBaseURL) else { return false }
+        var request = URLRequest(url: url)
+        // Some servers don't handle HEAD consistently, use GET for a clearer result
+        request.httpMethod = "GET"
+        request.timeoutInterval = timeout
+        let session = URLSession.shared
+        do {
+            let (_, response) = try await session.data(for: request)
+            if let http = response as? HTTPURLResponse {
+                print("🔌 Connectivity check HTTP status: \(http.statusCode)")
+                return (200...399).contains(http.statusCode)
+            }
+            print("🔌 Connectivity check: non-HTTP response received, considered online")
+            return true
+        } catch {
+            if let urlErr = error as? URLError {
+                print("🔌 Connectivity check failed: URL error \(urlErr.code) - \(urlErr.localizedDescription)")
+            } else {
+                print("🔌 Connectivity check failed: \(error.localizedDescription)")
+            }
+            return false
         }
     }
     
@@ -138,7 +183,8 @@ final class ArticleViewModel: ObservableObject {
             SpotlightIndexer.index(articles: self.articles)
         } catch {
             currentPage -= 1 // Revert on error
-            errorMessage = "Failed to load more articles."
+            print("❌ Load more error: \(error)")
+            errorMessage = "Failed to load more articles: \(error.localizedDescription)"
         }
     }
 
