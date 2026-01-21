@@ -33,6 +33,17 @@ const OTP_HMAC_SECRET = process.env.OTP_HMAC_SECRET || process.env.SESSION_SECRE
 // Email transporter configuration
 let transporter;
 
+function resolveFromAddress() {
+  // For SMTP providers like SendGrid, the SMTP username is often not an email (e.g. "apikey").
+  // Always prefer an explicit, verified sender address.
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
+
+  // Gmail: EMAIL_USER is typically an actual email address.
+  if (process.env.EMAIL_SERVICE === 'gmail' && process.env.EMAIL_USER) return process.env.EMAIL_USER;
+
+  return null;
+}
+
 function initEmailTransporter() {
   try {
     if (process.env.EMAIL_SERVICE === 'gmail') {
@@ -44,11 +55,13 @@ function initEmailTransporter() {
         }
       });
     } else if (process.env.SMTP_HOST) {
+      const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+      const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
       transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT || 587,
         secure: false,
-        auth: process.env.EMAIL_USER ? { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD } : undefined
+        auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined
       });
     } else {
       console.log('⚠️  No email configuration found, running in TEST MODE');
@@ -168,13 +181,19 @@ app.post('/auth/send-otp', async (req, res) => {
     if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email address' });
     if (!checkRateLimit(email)) return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
 
+    const fromAddress = resolveFromAddress();
+    if (!fromAddress && (process.env.SMTP_HOST || process.env.EMAIL_SERVICE === 'gmail')) {
+      console.error('Email misconfigured: missing EMAIL_FROM (or EMAIL_USER for gmail).');
+      return res.status(500).json({ error: 'Email is not configured correctly on the server' });
+    }
+
     const otp = generateOTP();
     const hashed = hashOTP(otp);
     await storeOTP(email.toLowerCase(), hashed);
 
     // Send email (non-blocking send handled, but we wait for success to inform client)
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@etherworld.co',
+      from: fromAddress || 'noreply@localhost',
       to: email,
       subject: 'Your EtherWorld Verification Code',
       html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.code-box{background:#f5f5f5;border:2px solid #007AFF;border-radius:8px;padding:20px;text-align:center;margin:30px 0}.code{font-size:36px;font-weight:700;letter-spacing:8px;color:#007AFF}.footer{font-size:12px;color:#666;margin-top:30px}</style></head><body><div class="container"><h2>Welcome to EtherWorld</h2><p>Your verification code is:</p><div class="code-box"><div class="code">${otp}</div></div><p>This code will expire in <strong>${Math.round(DEFAULT_TTL_SECONDS/60)} minutes</strong>.</p><p>If you didn't request this code, please ignore this email.</p><div class="footer"><p>© 2026 EtherWorld. All rights reserved.</p></div></div></body></html>`
@@ -239,7 +258,18 @@ app.post('/auth/verify-otp', async (req, res) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), emailConfigured: !!process.env.EMAIL_USER, redis: !!redisClient });
+  const fromAddress = resolveFromAddress();
+  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const smtpConfigured = !!process.env.SMTP_HOST && !!smtpUser && !!smtpPass;
+  const gmailConfigured = process.env.EMAIL_SERVICE === 'gmail' && !!process.env.EMAIL_USER && !!process.env.EMAIL_PASSWORD;
+
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    emailConfigured: !!fromAddress && (smtpConfigured || gmailConfigured),
+    redis: !!redisClient
+  });
 });
 
 // Start server
