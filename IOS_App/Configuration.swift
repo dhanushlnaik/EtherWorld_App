@@ -52,7 +52,7 @@ extension Configuration {
     }
 
     static var translationAPIURL: String {
-        return (try? value(for: "TranslationAPIURL")) ?? ""
+        return (try? value(for: "TranslationAPIURL")) ?? "https://api.mymemory.translated.net/get"
     }
 
     static var translationAPIKey: String {

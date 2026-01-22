@@ -91,6 +91,8 @@ struct GhostArticleService: PaginatedArticleService {
         let languageTag = "lang-\(appLanguageCode)"
         let filter = "tag:\(languageTag)"
         
+        print("🔍 Fetching articles for language: \(appLanguageCode)")
+        
         let articles = try await fetchArticlesWithFilter(filter, page: page, limit: limit)
         
         // If no articles found for selected language, try fallback strategies
@@ -168,36 +170,76 @@ struct GhostArticleService: PaginatedArticleService {
                 authorProfileImage: post.authors?.first?.profile_image.flatMap { URL(string: $0) },
                 imageURL: post.feature_image.flatMap { URL(string: $0) },
                 tags: post.tags?.map { $0.name } ?? [],
-                readingTimeMinutes: post.reading_time
+                readingTimeMinutes: post.reading_time,
+                translatedTitle: nil,
+                translatedExcerpt: nil,
+                translatedContent: nil,
+                isTranslated: false,
+                translationLanguage: nil
             )
         }
 
         // If Ghost doesn't provide per-language posts, translate titles/excerpts to the app language
         if appLanguageCode != "en" {
-            let titles = mapped.map { $0.title }
-            let excerpts = mapped.map { $0.excerpt }
-            do {
-                let tTitles = try await translationService.translateBatch(titles, to: appLanguageCode)
-                let tExcerpts = try await translationService.translateBatch(excerpts, to: appLanguageCode)
-                // Merge translations back into articles
-                mapped = zip(zip(mapped, tTitles), tExcerpts).map { pair in
-                    var article = pair.0.0
-                    article = Article(id: article.id,
-                                      title: pair.0.1,
-                                      excerpt: pair.1,
-                                      contentHTML: article.contentHTML,
-                                      publishedAt: article.publishedAt,
-                                      url: article.url,
-                                      author: article.author,
-                                      authorSlug: article.authorSlug,
-                                      authorProfileImage: article.authorProfileImage,
-                                      imageURL: article.imageURL,
-                                      tags: article.tags,
-                                      readingTimeMinutes: article.readingTimeMinutes)
-                    return article
+            print("🌐 Translating \(mapped.count) articles to '\(appLanguageCode)'...")
+            let cacheService = TranslationCacheService.shared
+            
+            var articlesNeedingTranslation: [(index: Int, article: Article)] = []
+            
+            // First pass: check cache and apply cached translations
+            for (index, article) in mapped.enumerated() {
+                if let cached = await cacheService.getTranslation(articleId: article.id, languageCode: appLanguageCode) {
+                    var updated = article
+                    updated.translatedTitle = cached.title
+                    updated.translatedExcerpt = cached.excerpt
+                    updated.isTranslated = true
+                    updated.translationLanguage = appLanguageCode
+                    mapped[index] = updated
+                } else {
+                    // Mark for translation
+                    articlesNeedingTranslation.append((index, article))
                 }
-            } catch {
-                print("⚠️ Translation failed, showing original text: \(error)")
+            }
+            
+            // Second pass: translate a limited number of uncached articles via API
+            if !articlesNeedingTranslation.isEmpty {
+                // To avoid hitting free API rate limits (HTTP 429), only translate
+                // a subset of articles per language change.
+                let maxToTranslate = 20
+                let limited = Array(articlesNeedingTranslation.prefix(maxToTranslate))
+                print("📡 API translating \(limited.count) uncached articles (of \(articlesNeedingTranslation.count) total)...")
+
+                let titles = limited.map { $0.article.title }
+                let excerpts = limited.map { $0.article.excerpt }
+                
+                do {
+                    let tTitles = try await translationService.translateBatch(titles, to: appLanguageCode)
+                    let tExcerpts = try await translationService.translateBatch(excerpts, to: appLanguageCode)
+                    
+                    // Merge translations and cache them for the limited set
+                    for (i, (index, article)) in limited.enumerated() {
+                        var updated = article
+                        updated.translatedTitle = tTitles[i]
+                        updated.translatedExcerpt = tExcerpts[i]
+                        updated.isTranslated = true
+                        updated.translationLanguage = appLanguageCode
+                        mapped[index] = updated
+                        
+                        // Save to cache for future use
+                        await cacheService.saveTranslation(
+                            articleId: article.id,
+                            languageCode: appLanguageCode,
+                            title: tTitles[i],
+                            excerpt: tExcerpts[i]
+                        )
+                    }
+                    if let firstOriginal = titles.first, let firstTranslated = tTitles.first {
+                        print("✅ Sample title translation: '\(firstOriginal)' → '\(firstTranslated)'")
+                    }
+                    print("✅ Translation complete for \(limited.count) articles (cached)")
+                } catch {
+                    print("⚠️ Title/Excerpt translation failed, showing original text: \(error)")
+                }
             }
         }
 
@@ -222,7 +264,7 @@ struct GhostArticleService: PaginatedArticleService {
         if appLanguageCode != "en" {
             // Try to translate the HTML content; fall back to original on error
             do {
-                let translated = try await translationService.translate(html, to: appLanguageCode)
+                let translated = try await translationService.translateHTML(html, to: appLanguageCode)
                 return translated
             } catch {
                 print("⚠️ Article content translation failed: \(error)")
@@ -232,6 +274,24 @@ struct GhostArticleService: PaginatedArticleService {
 
         return html
     }
+    
+    // Translate article content on demand
+    func translateArticleContent(_ article: Article, to language: String) async throws -> String {
+        if language == "en" {
+            return article.contentHTML
+        }
+        
+        do {
+            let translated = try await translationService.translateHTML(article.contentHTML, to: language)
+            return translated
+        } catch {
+            print("⚠️ Full article translation failed: \(error)")
+            throw error
+        }
+    }
+
+
+
 }
 
 

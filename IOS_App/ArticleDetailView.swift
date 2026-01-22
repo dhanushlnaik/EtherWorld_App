@@ -9,14 +9,16 @@ struct ArticleDetailView: View {
     @State private var isRead: Bool = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isExcerptExpanded: Bool = false
+    @State private var showingTranslationOptions: Bool = false
+    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
     private var excerptWords: [String] {
-        article.excerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        article.displayExcerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
     }
     
     private var displayedExcerpt: String {
         if isExcerptExpanded || excerptWords.count <= 30 {
-            return article.excerpt
+            return article.displayExcerpt
         } else {
             return excerptWords.prefix(30).joined(separator: " ") + "..."
         }
@@ -60,7 +62,7 @@ struct ArticleDetailView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(article.title)
+                    Text(article.displayTitle)
                         .font(.title)
                         .bold()
                         .accessibilityAddTraits(.isHeader)
@@ -77,7 +79,7 @@ struct ArticleDetailView: View {
                                     isExcerptExpanded.toggle()
                                 }
                             }) {
-                                Text(isExcerptExpanded ? "Show less" : "Read more")
+                                Text(LocalizedStringKey(isExcerptExpanded ? "article.showLess" : "article.showMore"))
                                     .font(.caption)
                                     .foregroundColor(.blue)
                                         .bold()
@@ -139,21 +141,21 @@ struct ArticleDetailView: View {
                         
                         Divider()
                             .padding(.vertical, 8)
-                        
-                        DynamicHTMLContentView(html: detailVM.article.contentHTML)
+
+                        DynamicHTMLContentView(html: detailVM.article.displayContent)
                     }
                     .padding()
                 }
             }
-            .navigationTitle("Article")
+            .navigationTitle(LocalizedStringKey("article.articleTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: 
                 HStack(spacing: 16) {
-                    ShareLink(item: URL(string: article.url) ?? URL(fileURLWithPath: ""), subject: Text(article.title), message: Text(article.excerpt)) {
+                    ShareLink(item: URL(string: article.url) ?? URL(fileURLWithPath: ""), subject: Text(article.displayTitle), message: Text(article.displayExcerpt)) {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundColor(.blue)
                     }
-                    .accessibilityLabel("Share article")
+                    .accessibilityLabel(LocalizedStringKey("article.share"))
                     .accessibilityHint("Opens sharing options for this article")
                     
                     Button(action: {
@@ -164,7 +166,7 @@ struct ArticleDetailView: View {
                         Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
                             .foregroundColor(.blue)
                     }
-                    .accessibilityLabel(isSaved ? "Remove bookmark" : "Add bookmark")
+                    .accessibilityLabel(LocalizedStringKey(isSaved ? "article.removeBookmark" : "article.bookmark"))
                     .accessibilityHint("Double tap to \(isSaved ? "remove" : "add") this article to your saved articles")
                 }
             )

@@ -59,7 +59,7 @@ struct AdaptiveContentView: View {
                         .scaledToFit()
                         .frame(width: 40, height: 40)
                         .cornerRadius(8)
-                    Text("EtherWorld")
+                    Text(LocalizedStringKey("app.name"))
                         .font(.headline)
                 }
                 .padding()
@@ -105,7 +105,7 @@ struct AdaptiveContentView: View {
             HomeFeedView()
                 .tabItem {
                     Label {
-                        Text("tab.home")
+                        Text(LocalizedStringKey("tab.home"))
                     } icon: {
                         Image(systemName: "house.fill")
                     }
@@ -115,7 +115,7 @@ struct AdaptiveContentView: View {
             DiscoverView()
                 .tabItem {
                     Label {
-                        Text("tab.search")
+                        Text(LocalizedStringKey("tab.search"))
                     } icon: {
                         Image(systemName: "magnifyingglass")
                     }
@@ -125,7 +125,7 @@ struct AdaptiveContentView: View {
             SavedArticlesView()
                 .tabItem {
                     Label {
-                        Text("tab.saved")
+                        Text(LocalizedStringKey("tab.saved"))
                     } icon: {
                         Image(systemName: "bookmark.fill")
                     }
@@ -135,7 +135,7 @@ struct AdaptiveContentView: View {
             ProfileSettingsView()
                 .tabItem {
                     Label {
-                        Text("tab.profile")
+                        Text(LocalizedStringKey("tab.profile"))
                     } icon: {
                         Image(systemName: "person.crop.circle.fill")
                     }

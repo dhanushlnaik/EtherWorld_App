@@ -55,7 +55,7 @@ struct ProfileSettingsView: View {
                         .padding(.vertical, 8)
                     }
                 } header: {
-                    Text("Profile")
+                    Text(LocalizedStringKey("profile.title"))
                 }
                 
                 // Account Management
@@ -63,17 +63,17 @@ struct ProfileSettingsView: View {
                     NavigationLink {
                         SessionManagementView()
                     } label: {
-                        Label("Active Sessions", systemImage: "laptopcomputer.and.iphone")
+                        Label(LocalizedStringKey("profile.activeSessions"), systemImage: "laptopcomputer.and.iphone")
                     }
                     
                     Button {
                         showingExportSheet = true
                     } label: {
-                        Label("Export My Data", systemImage: "square.and.arrow.up")
+                        Label(LocalizedStringKey("profile.exportData"), systemImage: "square.and.arrow.up")
                     }
                     .foregroundStyle(.primary)
                 } header: {
-                    Text("Account Management")
+                    Text(LocalizedStringKey("account.accountManagement"))
                 }
                 
                 // Settings Sections
@@ -84,37 +84,37 @@ struct ProfileSettingsView: View {
                     Button(role: .destructive) {
                         showingLogoutConfirmation = true
                     } label: {
-                        Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label(LocalizedStringKey("profile.signOut"), systemImage: "rectangle.portrait.and.arrow.right")
                     }
                     
                     Button(role: .destructive) {
                         showingDeleteConfirmation = true
                     } label: {
-                        Label("Delete Account", systemImage: "trash")
+                        Label(LocalizedStringKey("profile.deleteAccount"), systemImage: "trash")
                     }
                 } header: {
-                    Text("Danger Zone")
+                    Text(LocalizedStringKey("profile.dangerZone"))
                 } footer: {
-                    Text("Deleting your account will permanently remove all your data.")
+                    Text(LocalizedStringKey("profile.deleteWarning"))
                 }
             }
-            .navigationTitle("My EW")
+            .navigationTitle(LocalizedStringKey("profile.title"))
             .navigationBarTitleDisplayMode(.large)
-            .alert("Sign Out", isPresented: $showingLogoutConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Sign Out", role: .destructive) {
+            .alert(LocalizedStringKey("profile.signOut"), isPresented: $showingLogoutConfirmation) {
+                Button(role: .cancel) { } label: { Text(LocalizedStringKey("common.cancel")) }
+                Button(role: .destructive) {
                     authManager.logout()
-                }
+                } label: { Text(LocalizedStringKey("common.signOut")) }
             } message: {
-                Text("Are you sure you want to sign out? Your saved articles and preferences will be preserved.")
+                Text(LocalizedStringKey("profile.signOutConfirm"))
             }
-            .alert("Delete Account", isPresented: $showingDeleteConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Delete", role: .destructive) {
+            .alert(LocalizedStringKey("profile.deleteAccount"), isPresented: $showingDeleteConfirmation) {
+                Button(role: .cancel) { } label: { Text(LocalizedStringKey("common.cancel")) }
+                Button(role: .destructive) {
                     deleteAccount()
-                }
+                } label: { Text(LocalizedStringKey("profile.deleteAccount")) }
             } message: {
-                Text("This action cannot be undone. All your data will be permanently deleted.")
+                Text(LocalizedStringKey("profile.deleteConfirm"))
             }
             .sheet(isPresented: $showingExportSheet) {
                 DataExportView()
@@ -186,9 +186,9 @@ struct SettingsSectionsView: View {
                         .foregroundStyle(.blue)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Notifications")
+                        Text(LocalizedStringKey("settings.notifications.title"))
                             .fontWeight(.medium)
-                        Text("Get notified about new articles")
+                        Text(LocalizedStringKey("settings.notifications.subtitle"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -215,19 +215,19 @@ struct SettingsSectionsView: View {
                         Image(systemName: "slider.horizontal.3")
                             .foregroundStyle(.blue)
                             .frame(width: 28)
-                        Text("Notification Preferences")
+                        Text(LocalizedStringKey("settings.notifications.prefs.title"))
                     }
                 }
             }
         } header: {
-            Text("Notifications")
+            Text(LocalizedStringKey("settings.notifications.section"))
         }
         
         // Appearance
         Section {
             VStack(alignment: .leading, spacing: 12) {
-                Label {
-                    Text("Theme")
+                    Label {
+                    Text(LocalizedStringKey("settings.appearance.theme"))
                         .fontWeight(.medium)
                 } icon: {
                     Image(systemName: "circle.lefthalf.filled")
@@ -242,7 +242,7 @@ struct SettingsSectionsView: View {
                 HapticFeedback.light()
             }
         } header: {
-            Text("Appearance")
+            Text(LocalizedStringKey("settings.appearance.section"))
         }
         
         // Language Section
@@ -252,21 +252,22 @@ struct SettingsSectionsView: View {
                     .foregroundStyle(.blue)
                     .frame(width: 28)
                     .font(.system(size: 16))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("settings.language.title")
+                    VStack(alignment: .leading, spacing: 4) {
+                    Text(LocalizedStringKey("settings.language.title"))
                         .fontWeight(.medium)
-                    Text("settings.language.subtitle")
+                    Text(LocalizedStringKey("settings.language.subtitle"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Picker("Language", selection: $appLanguageCode) {
-                    Text("English").tag("en")
-                    Text("हिन्दी").tag("hi")
-                    Text("Español").tag("es")
-                    Text("Français").tag("fr")
-                    Text("Deutsch").tag("de")
-                    Text("Português").tag("pt")
+                Picker(LocalizedStringKey("settings.language.title"), selection: $appLanguageCode) {
+                    Text(LocalizedStringKey("language.english")).tag("en")
+                    Text(LocalizedStringKey("language.hindi")).tag("hi")
+                    Text(LocalizedStringKey("language.spanish")).tag("es")
+                    Text(LocalizedStringKey("language.french")).tag("fr")
+                    Text(LocalizedStringKey("language.german")).tag("de")
+                    Text(LocalizedStringKey("language.portuguese")).tag("pt")
+                    Text(LocalizedStringKey("language.mandarin")).tag("zh")
                 }
                 .pickerStyle(.menu)
             }
@@ -275,7 +276,7 @@ struct SettingsSectionsView: View {
                 HapticFeedback.light()
             }
         } header: {
-            Text("settings.language.section")
+            Text(LocalizedStringKey("settings.language.section"))
         }
         
         // Newsletter
@@ -286,9 +287,9 @@ struct SettingsSectionsView: View {
                         .foregroundStyle(.orange)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Weekly Newsletter")
+                        Text(LocalizedStringKey("settings.newsletter.title"))
                             .fontWeight(.medium)
-                        Text("Get a recap via email")
+                        Text(LocalizedStringKey("settings.newsletter.subtitle"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -298,7 +299,7 @@ struct SettingsSectionsView: View {
                 HapticFeedback.light()
             }
         } header: {
-            Text("Newsletter")
+            Text(LocalizedStringKey("settings.newsletter.section"))
         }
         
         // Privacy
@@ -306,7 +307,7 @@ struct SettingsSectionsView: View {
             Button {
                 showingPrivacyPolicy = true
             } label: {
-                Label("Privacy Policy", systemImage: "lock.fill")
+                Label(LocalizedStringKey("settings.privacy.policy"), systemImage: "lock.fill")
             }
             .foregroundStyle(.primary)
             
@@ -316,9 +317,9 @@ struct SettingsSectionsView: View {
                         .foregroundStyle(.blue)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Analytics")
+                        Text(LocalizedStringKey("settings.privacy.analytics.title"))
                             .fontWeight(.medium)
-                        Text("Help improve the app")
+                        Text(LocalizedStringKey("settings.privacy.analytics.subtitle"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -328,30 +329,86 @@ struct SettingsSectionsView: View {
                 HapticFeedback.light()
             }
         } header: {
-            Text("Privacy")
+            Text(LocalizedStringKey("settings.privacy.section"))
         }
         
         // Offline & Storage
         OfflineControlsSection()
         
+        // Translation Cache Stats
+        TranslationCacheStatsSection()
+        
         // About
         Section {
             HStack {
-                Text("Version")
+                Text(LocalizedStringKey("settings.about.version"))
                 Spacer()
                 Text("1.0.0")
                     .foregroundStyle(.secondary)
             }
             
             Link(destination: URL(string: "https://etherworld.co")!) {
-                Label("Visit EtherWorld", systemImage: "globe")
+                Label(LocalizedStringKey("settings.about.visit"), systemImage: "globe")
             }
         } header: {
-            Text("About")
+            Text(LocalizedStringKey("settings.about.section"))
         }
         
         .sheet(isPresented: $showingPrivacyPolicy) {
             PrivacyPolicyView()
+        }
+    }
+}
+
+struct TranslationCacheStatsSection: View {
+    @State private var stats: (articleCount: Int, totalEntries: Int, approximateSizeKB: Int) = (0, 0, 0)
+    
+    var body: some View {
+        Section {
+            HStack {
+                Label(LocalizedStringKey("settings.cache.articles"), systemImage: "doc.text.fill")
+                Spacer()
+                Text("\(stats.articleCount)")
+                    .foregroundStyle(.secondary)
+            }
+            
+            HStack {
+                Label(LocalizedStringKey("settings.cache.translations"), systemImage: "globe.badge.chevron.backward")
+                Spacer()
+                Text("\(stats.totalEntries)")
+                    .foregroundStyle(.secondary)
+            }
+            
+            HStack {
+                Label(LocalizedStringKey("settings.cache.size"), systemImage: "internaldrive.fill")
+                Spacer()
+                Text("\(stats.approximateSizeKB) KB")
+                    .foregroundStyle(.secondary)
+            }
+            
+            Button(role: .destructive) {
+                Task {
+                    await TranslationCacheService.shared.clearAllTranslations()
+                    updateStats()
+                    HapticFeedback.light()
+                }
+            } label: {
+                Label(LocalizedStringKey("settings.cache.clear"), systemImage: "trash.fill")
+            }
+            .foregroundStyle(.red)
+        } header: {
+            Text(LocalizedStringKey("settings.cache.section"))
+        } footer: {
+            Text(LocalizedStringKey("settings.cache.description"))
+        }
+        .onAppear {
+            updateStats()
+        }
+    }
+    
+    private func updateStats() {
+        Task {
+            stats = await TranslationCacheService.shared.getCacheStats()
         }
     }
 }

@@ -67,9 +67,9 @@ struct OfflineControlsSection: View {
                         .frame(width: 28)
                         .font(.system(size: 16))
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Offline Downloads")
+                        Text(LocalizedStringKey("offline.title"))
                             .fontWeight(.medium)
-                        Text("Keep recent articles available without internet")
+                        Text(LocalizedStringKey("offline.description"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -77,9 +77,9 @@ struct OfflineControlsSection: View {
             }
 
             HStack {
-                Text("Articles to keep")
+                Text(LocalizedStringKey("offline.articlesCount"))
                 Spacer()
-                Picker("Limit", selection: $offlineLimit) {
+                Picker(LocalizedStringKey("offline.articlesCount"), selection: $offlineLimit) {
                     ForEach([10, 20, 30, 50, 100], id: \.self) { n in
                         Text("\(n)").tag(n)
                     }
@@ -89,7 +89,7 @@ struct OfflineControlsSection: View {
             }
 
             HStack {
-                Text("Offline storage")
+                Text(LocalizedStringKey("offline.storage"))
                 Spacer()
                 Text(byteCount(usage))
                     .foregroundStyle(.secondary)
@@ -102,7 +102,7 @@ struct OfflineControlsSection: View {
                 Button("Clear Offline Data", role: .destructive) { clear() }
             }
         } header: {
-            Text("Storage")
+            Text(LocalizedStringKey("offline.storageLabel"))
         }
         .onAppear { usage = OfflineManager.storageUsageBytes() }
     }

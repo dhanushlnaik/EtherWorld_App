@@ -58,3 +58,148 @@
 "home.allCaughtUp" = "सब देख लिया!";
 "home.noStories" = "अभी आपकी फ़ीड में\nकोई नई कहानियाँ नहीं हैं। थोड़ी देर बाद देखें।";
 "home.refreshFeed" = "फ़ीड ताज़ा करें";
+
+// Article Detail
+"article.showMore" = "और पढ़ें";
+"article.showLess" = "कम दिखाएँ";
+"article.share" = "साझा करें";
+"article.bookmark" = "बुकमार्क";
+"article.removeBookmark" = "बुकमार्क हटाएँ";
+"article.articleTitle" = "लेख";
+"article.translating" = "अनुवाद किया जा रहा है...";
+"article.translated" = "%@ में अनुवादित";
+"article.viewOriginal" = "मूल देखें";
+"article.viewTranslated" = "अनुवादित देखें";
+
+// Profile Settings
+"profile.title" = "माय EW";
+"profile.activeSessions" = "सक्रिय सत्र";
+"profile.exportData" = "मेरा डेटा निर्यात करें";
+"profile.dangerZone" = "खतरनाक क्षेत्र";
+"profile.signOut" = "साइन आउट";
+"profile.deleteAccount" = "खाता हटाएँ";
+"profile.deleteWarning" = "आपके खाते को हटाने से आपका सभी डेटा स्थायी रूप से हटा दिया जाएगा।";
+"profile.signOutConfirm" = "क्या आप निश्चित रूप से साइन आउट करना चाहते हैं? आपकी सहेजी गई लेखें और पसंदें संरक्षित रहेंगी।";
+"profile.deleteConfirm" = "यह कार्रवाई अपरिवर्तनीय है। आपका सभी डेटा स्थायी रूप से हटा दिया जाएगा।";
+
+// Account Management
+"account.accountManagement" = "खाता प्रबंधन";
+"account.email" = "ईमेल";
+"account.apple" = "Apple";
+"account.google" = "Google";
+
+// Errors
+"error.loadingProfile" = "प्रोफ़ाइल लोड करने में विफल";
+"error.translation.failed" = "अनुवाद विफल";
+"error.translation.unavailable" = "अनुवाद सेवा उपलब्ध नहीं";
+
+// Search
+"search.placeholder" = "लेखों को खोजें...";
+"search.noResults" = "कोई लेख नहीं मिला";
+
+// Saved Articles
+"saved.title" = "सहेजी गई लेखें";
+"saved.empty" = "अभी तक कोई सहेजी गई लेख नहीं";
+
+// General
+"general.loading" = "लोड किया जा रहा है...";
+"general.retry" = "पुनः प्रयास करें";
+"general.close" = "बंद करें";
+"general.share" = "साझा करें";
+"general.save" = "सहेजें";
+"general.delete" = "हटाएँ";
+"general.confirm" = "पुष्टि करें";
+
+// Theme
+"theme.system" = "सिस्टम";
+"theme.light" = "लाइट";
+"theme.dark" = "डार्क";
+"theme.preview" = "पूर्वावलोकन";
+"theme.applies" = "संपूर्ण ऐप में लागू होता है";
+"theme.auto" = "ऑटो";
+
+// Languages (display names)
+"language.english" = "English";
+"language.hindi" = "हिन्दी";
+"language.spanish" = "Español";
+"language.french" = "Français";
+"language.german" = "Deutsch";
+"language.portuguese" = "Português";
+"language.mandarin" = "中文";
+
+// Data Export
+"export.title" = "मेरा डेटा निर्यात करें";
+"export.options" = "निर्यात विकल्प";
+"export.description" = "आपका डेटा JSON फ़ाइलों के रूप में निर्यात किया जाएगा जिसे आप सहेज या साझा कर सकते हैं।";
+"export.complete" = "निर्यात पूर्ण";
+"export.success" = "आपका डेटा सफलतापूर्वक निर्यात किया गया है।";
+
+// Privacy Policy
+"privacy.title" = "गोपनीयता और डेटा प्रथाएँ";
+"privacy.whatWeCollect" = "हम क्या एकत्र करते हैं";
+"privacy.minimal" = "EtherWorld न्यूनतम डेटा एकत्र करता है:";
+"privacy.dataSync" = "आपकी प्राथमिकताएँ और सहेजे गए लेख हमारे सुरक्षित बैकएंड में सिंक किए जाते हैं।";
+"privacy.localStorage" = "स्थानीय संग्रहण";
+"privacy.storageDescription" = "सभी डेटा आपके डिवाइस पर स्थानीय रूप से संग्रहीत है:";
+"privacy.clearData" = "आप किसी भी समय सेटिंग्स से सभी कैश्ड डेटा साफ कर सकते हैं।";
+"privacy.notifications" = "सूचनाएँ";
+"privacy.notificationsDescription" = "बैकग्राउंड रिफ्रेश आवधिक रूप से नए लेखों की जांच करता है।";
+"privacy.analytics" = "एनालिटिक्स और डायग्नॉस्टिक्स";
+"privacy.analyticsDescription" = "हम ऐप में सुधार के लिए गुमनाम एनालिटिक्स का उपयोग करते हैं।";
+"privacy.fullPolicy" = "पूर्ण गोपनीयता नीति";
+"privacy.clearYourData" = "अपना डेटा साफ करें";
+"privacy.clearInstructions" = "सेटिंग्स → डेवलपर टूल्स → कैश साफ करें से जाएँ।";
+"privacy.lastUpdated" = "अंतिम अपडेट: जनवरी 2026";
+
+// Discover View
+"discover.clear" = "साफ करें";
+"discover.authors" = "लेखक";
+"discover.articles" = "लेख";
+"discover.noResults" = "विभिन्न खोज शब्दों या टैग आजमाएँ";
+
+// Author Profile
+"author.failedToLoad" = "प्रोफ़ाइल लोड करने में विफल";
+"author.twitter" = "ट्विटर";
+"author.posts" = "%d पोस्ट";
+"author.storiesBy" = "%@ द्वारा कहानियाँ";
+"author.noArticles" = "अभी कोई लेख नहीं";
+
+// Offline
+"offline.title" = "ऑफ़लाइन डाउनलोड";
+"offline.description" = "बिना इंटरनेट के हाल की लेखें उपलब्ध रखें";
+"offline.articlesCount" = "रखने के लिए लेख";
+"offline.storage" = "ऑफ़लाइन संग्रहण";
+"offline.storageLabel" = "संग्रहण";
+
+// Saved Articles
+"saved.noArticles" = "कोई सहेजी गई लेख नहीं";
+"saved.emptyDescription" = "ऑफ़लाइन पढ़ने के लिए लेखें सहेजें";
+"saved.remove" = "हटाएँ";
+
+// Notifications
+"notifications.noTopics" = "अभी कोई विषय उपलब्ध नहीं";
+"notifications.selected" = "चुने गए: %@";
+"notifications.startTime" = "शुरुआत";
+"notifications.endTime" = "समाप्ति";
+"notifications.muteHours" = "सूचनाएँ चयनित घंटों के बीच मूक रहेंगी।";
+
+// Errors
+"error.usingCached" = "कैश्ड डेटा का उपयोग किया जा रहा है";
+
+// Session Management
+"session.title" = "सक्रिय सत्र";
+"session.description" = "ये वे डिवाइस हैं जो आपके खाते में साइन इन हैं।";
+"session.revoke" = "रद्द करें";
+"session.thisDevice" = "(यह डिवाइस)";
+"session.lastActive" = "अंतिम सक्रिय: %@";
+
+// Version
+"app.version" = "1.0.0";
+
+// Translation Cache
+"settings.cache.section" = "अनुवाद कैश";
+"settings.cache.articles" = "कैश किए गए लेख";
+"settings.cache.translations" = "अनुवाद प्रविष्टियां";
+"settings.cache.size" = "कैश आकार";
+"settings.cache.clear" = "कैश साफ़ करें";
+"settings.cache.description" = "तुरंत भाषा स्विचिंग के लिए अनुवाद स्थानीय रूप से कैश किए जाते हैं। स्थान खाली करने या अनुवाद ताज़ा करने के लिए कैश साफ़ करें।";

@@ -54,9 +54,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("settings.notifications.title")
+                                Text(LocalizedStringKey("settings.notifications.title"))
                                     .fontWeight(.medium)
-                                Text("settings.notifications.subtitle")
+                                Text(LocalizedStringKey("settings.notifications.subtitle"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -86,9 +86,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("settings.notifications.prefs.title")
+                                Text(LocalizedStringKey("settings.notifications.prefs.title"))
                                     .fontWeight(.medium)
-                                Text("settings.notifications.prefs.subtitle")
+                                Text(LocalizedStringKey("settings.notifications.prefs.subtitle"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -101,14 +101,14 @@ struct SettingsView: View {
                     .foregroundStyle(.primary)
                     .disabled(!notificationsEnabled)
                 } header: {
-                    Text("settings.notifications.section")
+                    Text(LocalizedStringKey("settings.notifications.section"))
                 }
                 
                 // Appearance Section
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
                         Label {
-                            Text("settings.appearance.theme")
+                            Text(LocalizedStringKey("settings.appearance.theme"))
                                 .fontWeight(.medium)
                         } icon: {
                             Image(systemName: "circle.lefthalf.filled")
@@ -123,7 +123,7 @@ struct SettingsView: View {
                         HapticFeedback.light()
                     }
                 } header: {
-                    Text("settings.appearance.section")
+                    Text(LocalizedStringKey("settings.appearance.section"))
                 }
                 
                 // Privacy & Data Section
@@ -136,7 +136,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.green)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("settings.privacy.policy")
+                            Text(LocalizedStringKey("settings.privacy.policy"))
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -153,9 +153,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("settings.privacy.analytics.title")
+                                Text(LocalizedStringKey("settings.privacy.analytics.title"))
                                     .fontWeight(.medium)
-                                Text("settings.privacy.analytics.subtitle")
+                                Text(LocalizedStringKey("settings.privacy.analytics.subtitle"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -167,7 +167,7 @@ struct SettingsView: View {
                         AnalyticsManager.shared.setEnabled(analyticsEnabled)
                     }
                 } header: {
-                    Text("settings.privacy.section")
+                    Text(LocalizedStringKey("settings.privacy.section"))
                 }
 
                 // Newsletter Section
@@ -179,9 +179,9 @@ struct SettingsView: View {
                                 .frame(width: 28)
                                 .font(.system(size: 16))
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("settings.newsletter.title")
+                                Text(LocalizedStringKey("settings.newsletter.title"))
                                     .fontWeight(.medium)
-                                Text("settings.newsletter.subtitle")
+                                Text(LocalizedStringKey("settings.newsletter.subtitle"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -192,7 +192,7 @@ struct SettingsView: View {
                         syncPreferences()
                     }
                 } header: {
-                    Text("settings.newsletter.section")
+                    Text(LocalizedStringKey("settings.newsletter.section"))
                 }
                 
                 // About Section
@@ -202,7 +202,7 @@ struct SettingsView: View {
                             .foregroundStyle(.gray)
                             .frame(width: 28)
                             .font(.system(size: 16))
-                        Text("settings.about.version")
+                        Text(LocalizedStringKey("settings.about.version"))
                             .fontWeight(.medium)
                         Spacer()
                         Text("1.0.0")
@@ -215,7 +215,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("settings.about.visit")
+                            Text(LocalizedStringKey("settings.about.visit"))
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "arrow.up.right")
@@ -231,7 +231,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("settings.about.twitter")
+                            Text(LocalizedStringKey("settings.about.twitter"))
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "arrow.up.right")
@@ -241,14 +241,14 @@ struct SettingsView: View {
                     }
                     .foregroundStyle(.primary)
                 } header: {
-                    Text("settings.about.section")
+                    Text(LocalizedStringKey("settings.about.section"))
                 }
                 
                 // Account Section
                 Section {
                     if let user = authManager.currentUser {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("settings.account.signedInAs")
+                            Text(LocalizedStringKey("settings.account.signedInAs"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Text(user.email)
@@ -266,12 +266,12 @@ struct SettingsView: View {
                                 .foregroundStyle(.red)
                                 .frame(width: 28)
                                 .font(.system(size: 16))
-                            Text("settings.account.signOut")
+                            Text(LocalizedStringKey("settings.account.signOut"))
                                 .fontWeight(.medium)
                         }
                     }
                 } header: {
-                    Text("settings.account.section")
+                    Text(LocalizedStringKey("settings.account.section"))
                 }
                 
                 // Offline & Cache Section
@@ -286,19 +286,19 @@ struct SettingsView: View {
                             Image(systemName: "bolt.fill")
                                 .foregroundStyle(.orange)
                                 .frame(width: 28)
-                            Text("settings.developer.trigger")
+                            Text(LocalizedStringKey("settings.developer.trigger"))
                         }
                     }
                     .disabled(!notificationManager.isAuthorized)
                     .accessibilityLabel("Trigger background refresh")
                     .accessibilityHint("Manually triggers the background refresh to check for new articles and send a test notification")
                 } header: {
-                    Text("settings.developer.section")
+                    Text(LocalizedStringKey("settings.developer.section"))
                 } footer: {
-                    Text("settings.developer.footer")
+                    Text(LocalizedStringKey("settings.developer.footer"))
                 }
             }
-            .navigationTitle(Text("settings.title"))
+            .navigationTitle(Text(LocalizedStringKey("settings.title")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -313,13 +313,13 @@ struct SettingsView: View {
             .sheet(isPresented: $showingPrivacyPolicy) {
                 PrivacyPolicyView()
             }
-            .alert("settings.account.signOut", isPresented: $showingLogoutConfirmation) {
-                Button("common.cancel", role: .cancel) {}
-                Button("common.signOut", role: .destructive) {
+            .alert(LocalizedStringKey("settings.account.signOut"), isPresented: $showingLogoutConfirmation) {
+                Button(role: .cancel) { } label: { Text(LocalizedStringKey("common.cancel")) }
+                Button(role: .destructive) {
                     authManager.logout()
-                }
+                } label: { Text(LocalizedStringKey("common.signOut")) }
             } message: {
-                Text("Are you sure you want to sign out? Your saved articles and preferences will be preserved.")
+                Text(LocalizedStringKey("profile.signOutConfirm"))
             }
         }
     }

@@ -14,7 +14,7 @@ struct AuthorProfileView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.largeTitle)
                         .foregroundColor(.orange)
-                    Text("Failed to load profile")
+                    Text(LocalizedStringKey("author.failedToLoad"))
                         .font(.headline)
                     Text(error)
                         .font(.caption)
@@ -99,7 +99,7 @@ struct AuthorProfileView: View {
                                 Link(destination: URL(string: "https://twitter.com/\(twitter)")!) {
                                     HStack {
                                         Image(systemName: "bird")
-                                        Text("Twitter")
+                                        Text(LocalizedStringKey("author.twitter"))
                                     }
                                     .font(.subheadline)
                                     .padding(.horizontal, 16)
@@ -113,7 +113,7 @@ struct AuthorProfileView: View {
                             if let postCount = author.postCount {
                                 HStack {
                                     Image(systemName: "doc.text")
-                                    Text("\(postCount) posts")
+                                    Text(String(format: NSLocalizedString("author.posts", comment: ""), postCount))
                                 }
                                 .font(.subheadline)
                                 .padding(.horizontal, 16)
@@ -139,7 +139,7 @@ struct AuthorProfileView: View {
                     
                     // Articles Section
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("STORIES BY \(author.name.uppercased())")
+                        Text(String(format: NSLocalizedString("author.storiesBy", comment: ""), author.name.uppercased()))
                             .font(.headline)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)
@@ -151,7 +151,7 @@ struct AuthorProfileView: View {
                             .padding(.horizontal)
                         
                         if viewModel.articles.isEmpty {
-                            Text("No articles yet")
+                            Text(LocalizedStringKey("author.noArticles"))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .padding()

@@ -41,10 +41,10 @@ struct LoginView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     
-                    Text("app.name")
+                    Text(LocalizedStringKey("app.name"))
                         .font(.system(size: 36, weight: .bold, design: .default))
                     
-                    Text("login.tagline")
+                    Text(LocalizedStringKey("login.tagline"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -87,7 +87,7 @@ struct LoginView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "g.circle.fill")
                                 .font(.system(size: 20))
-                            Text("login.google")
+                            Text(LocalizedStringKey("login.google"))
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -106,7 +106,7 @@ struct LoginView: View {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
                             .frame(height: 1)
-                        Text("login.or")
+                        Text(LocalizedStringKey("login.or"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 8)
@@ -118,12 +118,12 @@ struct LoginView: View {
                     
                     // Email Sign In
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(showOTPField ? "Enter Verification Code" : "login.email.title")
+                        Text(showOTPField ? "Enter Verification Code" : LocalizedStringKey("login.email.title"))
                             .font(.headline)
                             .foregroundColor(.primary)
                         
                         if !showOTPField {
-                            TextField("login.email.placeholder", text: $email)
+                            TextField(LocalizedStringKey("login.email.placeholder"), text: $email)
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .autocapitalization(.none)
@@ -136,7 +136,7 @@ struct LoginView: View {
                                         .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                 )
                             
-                            Text("We'll send you a verification code")
+                            Text(LocalizedStringKey("login.email.note"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         } else {
@@ -183,9 +183,9 @@ struct LoginView: View {
 
                         Toggle(isOn: $newsletterOptIn) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("login.newsletter.title")
+                                Text(LocalizedStringKey("login.newsletter.title"))
                                     .fontWeight(.semibold)
-                                Text("login.newsletter.subtitle")
+                                Text(LocalizedStringKey("login.newsletter.subtitle"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -225,7 +225,7 @@ struct LoginView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text(showOTPField ? "Verify Code" : "login.continue")
+                                Text(showOTPField ? "Verify Code" : LocalizedStringKey("login.continue"))
                                     .fontWeight(.semibold)
                             }
                         }
@@ -275,11 +275,11 @@ struct LoginView: View {
                 
                 // Footer
                 VStack(spacing: 8) {
-                    Text("login.footer.text")
+                    Text(LocalizedStringKey("login.footer.text"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Link("login.footer.link", destination: URL(string: "https://etherworld.co/privacy")!)
+                    Link(LocalizedStringKey("login.footer.link"), destination: URL(string: "https://etherworld.co/privacy")!)
                         .font(.caption)
                         .foregroundColor(.blue)
                 }
@@ -297,7 +297,7 @@ struct LoginView: View {
                             .font(.system(size: 60))
                             .foregroundColor(.green)
                         
-                        Text("login.success")
+                        Text(LocalizedStringKey("login.success"))
                             .font(.title2)
                             .fontWeight(.bold)
                     }

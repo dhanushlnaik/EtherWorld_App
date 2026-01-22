@@ -236,7 +236,7 @@ struct DiscoverView: View {
                         Button {
                             selectedTags.removeAll()
                         } label: {
-                            Text("Clear")
+                            Text(LocalizedStringKey("discover.clear"))
                                 .font(.subheadline)
                                 .foregroundStyle(.red)
                         }
@@ -285,7 +285,7 @@ struct DiscoverView: View {
                 } else if !matchingAuthors.isEmpty {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Authors")
+                            Text(LocalizedStringKey("discover.authors"))
                                 .font(.headline)
                                 .padding(.horizontal)
                                 .padding(.top, 8)
@@ -331,7 +331,7 @@ struct DiscoverView: View {
                             }
                             
                             if !filteredArticles.isEmpty {
-                                Text("Articles")
+                                Text(LocalizedStringKey("discover.articles"))
                                     .font(.headline)
                                     .padding(.horizontal)
                                     .padding(.top, 8)
@@ -496,7 +496,7 @@ struct SearchResultCard: View {
                             .foregroundStyle(.secondary)
                     }
                     
-                    if let author = article.author {
+                    if article.author != nil {
                         Text("•")
                             .font(.caption)
                             .foregroundStyle(.secondary)

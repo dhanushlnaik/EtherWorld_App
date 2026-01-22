@@ -364,7 +364,23 @@ final class ArticleViewModel: ObservableObject {
             .dropFirst() // Skip initial value
             .sink { [weak self] newLanguage in
                 Task { @MainActor [weak self] in
-                    print("🌍 Language changed to \(newLanguage), reloading articles...")
+                    print("🌍 Language changed to \(newLanguage), clearing translation caches and reloading articles...")
+
+                    // Clear translation caches (Hybrid + per-article cache) so we don't
+                    // keep serving stale English text when the API was rate-limited.
+                    let translationService = ServiceFactory.makeTranslationService()
+                    translationService.clearCache()
+                    Task {
+                        await TranslationCacheService.shared.clearAllTranslations()
+                    }
+
+                    // Clear HTTP cache to force fresh network requests
+                    URLCache.shared.removeAllCachedResponses()
+                    
+                    // Clear articles array so view refreshes
+                    self?.articles = []
+                    
+                    // Reload articles with new language
                     await self?.load()
                 }
             }

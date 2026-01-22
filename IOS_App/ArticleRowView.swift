@@ -36,13 +36,13 @@ struct ArticleRowView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text(article.title)
+                Text(article.displayTitle)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.primary)
                     .lineLimit(2)
                 
-                Text(article.excerpt)
+                Text(article.displayExcerpt)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -94,7 +94,7 @@ struct ArticleRowView: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 2)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Article: \(article.title). Author: \(article.author ?? "Unknown author").")
+        .accessibilityLabel("Article: \(article.displayTitle). Author: \(article.author ?? "Unknown author").")
     }
 }
 

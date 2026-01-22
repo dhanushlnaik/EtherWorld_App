@@ -8,7 +8,7 @@ struct ContentView: View {
             HomeFeedView()
                 .tabItem {
                     Label {
-                        Text("tab.home")
+                        Text(LocalizedStringKey("tab.home"))
                     } icon: {
                         Image(systemName: "house.fill")
                     }
@@ -17,7 +17,7 @@ struct ContentView: View {
             DiscoverView()
                 .tabItem {
                     Label {
-                        Text("tab.search")
+                        Text(LocalizedStringKey("tab.search"))
                     } icon: {
                         Image(systemName: "magnifyingglass")
                     }
@@ -26,7 +26,7 @@ struct ContentView: View {
             SavedArticlesView()
                 .tabItem {
                     Label {
-                        Text("tab.saved")
+                        Text(LocalizedStringKey("tab.saved"))
                     } icon: {
                         Image(systemName: "bookmark.fill")
                     }
@@ -35,7 +35,7 @@ struct ContentView: View {
             SettingsView()
                 .tabItem {
                     Label {
-                        Text("tab.profile")
+                        Text(LocalizedStringKey("tab.profile"))
                     } icon: {
                         Image(systemName: "person.crop.circle.fill")
                     }

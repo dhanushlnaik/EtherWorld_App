@@ -3,7 +3,11 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { createClient } = require('redis');
-require('dotenv').config();
+const path = require('path');
+
+// Always load .env from the backend folder so the server
+// works whether started in ./backend or from the repo root.
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -199,7 +203,10 @@ app.post('/auth/send-otp', async (req, res) => {
       html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.code-box{background:#f5f5f5;border:2px solid #007AFF;border-radius:8px;padding:20px;text-align:center;margin:30px 0}.code{font-size:36px;font-weight:700;letter-spacing:8px;color:#007AFF}.footer{font-size:12px;color:#666;margin-top:30px}</style></head><body><div class="container"><h2>Welcome to EtherWorld</h2><p>Your verification code is:</p><div class="code-box"><div class="code">${otp}</div></div><p>This code will expire in <strong>${Math.round(DEFAULT_TTL_SECONDS/60)} minutes</strong>.</p><p>If you didn't request this code, please ignore this email.</p><div class="footer"><p>© 2026 EtherWorld. All rights reserved.</p></div></div></body></html>`
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    if (process.env.DEBUG_OTP === '1') {
+      console.log('📧 Sent OTP (DEBUG_OTP=1):', { to: email, otp, messageId: info && info.messageId });
+    }
     console.log(`✅ OTP sent to ${email} (expires in ${DEFAULT_TTL_SECONDS} sec)`);
     res.json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
@@ -273,8 +280,26 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 EtherWorld OTP Backend running on port ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 EtherWorld OTP Backend running on ${HOST}:${PORT}`);
   console.log(`📧 Email mode: ${process.env.EMAIL_SERVICE || process.env.SMTP_HOST || 'TEST MODE'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  const healthHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+  console.log(`🔗 Health check: http://${healthHost}:${PORT}/health`);
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err);
+  if (err && err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} already in use. Make sure no other instance is running and retry.`);
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
 });

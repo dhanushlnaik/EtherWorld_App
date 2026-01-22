@@ -1,0 +1,205 @@
+"app.name" = "以太世界";
+"login.tagline" = "随时了解以太坊新闻";
+"login.apple" = "使用 Apple 继续";
+"login.google" = "使用 Google 继续";
+"login.or" = "或";
+"login.email.title" = "用电子邮件登录";
+"login.email.placeholder" = "输入您的电子邮件";
+"login.email.note" = "我们将发送您一个魔法链接来登录";
+"login.newsletter.title" = "每周新闻通讯（可选）";
+"login.newsletter.subtitle" = "获取每周精简摘要，直接送到您的收件箱。";
+"login.continue" = "继续";
+"login.footer.text" = "继续即表示您同意我们的";
+"login.footer.link" = "服务条款和隐私政策";
+"login.success" = "欢迎！";
+
+"tab.home" = "首页";
+"tab.search" = "搜索";
+"tab.saved" = "已保存";
+"tab.profile" = "我的 EW";
+
+"settings.title" = "设置";
+"settings.notifications.section" = "通知";
+"settings.notifications.title" = "新文章通知";
+"settings.notifications.subtitle" = "当发布新文章时获得通知";
+"settings.notifications.prefs.title" = "通知首选项";
+"settings.notifications.prefs.subtitle" = "主题和安静时间";
+"settings.appearance.section" = "外观";
+"settings.appearance.theme" = "主题";
+"settings.privacy.section" = "隐私";
+"settings.privacy.analytics.title" = "分析和诊断";
+"settings.privacy.analytics.subtitle" = "帮助改进应用程序";
+"settings.privacy.policy" = "隐私政策";
+"settings.newsletter.section" = "新闻通讯";
+"settings.newsletter.title" = "每周新闻通讯";
+"settings.newsletter.subtitle" = "通过电子邮件获取每周精简摘要";
+"settings.about.section" = "关于";
+"settings.about.version" = "版本";
+"settings.about.visit" = "访问以太世界";
+"settings.about.twitter" = "在 Twitter 上关注";
+"settings.account.section" = "账户";
+"settings.account.signedInAs" = "登录为";
+"settings.account.signOut" = "退出登录";
+"settings.developer.section" = "开发者";
+"settings.developer.trigger" = "现在触发后台刷新";
+"settings.developer.footer" = "首先授予通知权限以查看检测到新文章时的测试警报。";
+
+"settings.language.section" = "语言";
+"settings.language.title" = "应用程序语言";
+"settings.language.subtitle" = "更改应用程序的语言";
+
+"common.cancel" = "取消";
+"common.signOut" = "退出登录";
+"common.error.generic" = "出了点问题。请重试。";
+
+"home.today" = "今天";
+"home.topStories" = "热门故事";
+"home.minRead" = "分钟阅读";
+"home.allCaughtUp" = "全部已读！";
+"home.noStories" = "您的信息流中现在没有新故事。\n请稍后再试。";
+"home.refreshFeed" = "刷新提要";
+
+// Article Detail
+"article.showMore" = "阅读更多";
+"article.showLess" = "显示较少";
+"article.share" = "分享";
+"article.bookmark" = "书签";
+"article.removeBookmark" = "移除书签";
+"article.articleTitle" = "文章";
+"article.translating" = "翻译中...";
+"article.translated" = "翻译为 %@";
+"article.viewOriginal" = "查看原文";
+"article.viewTranslated" = "查看翻译";
+
+// Profile Settings
+"profile.title" = "我的 EW";
+"profile.activeSessions" = "活跃会话";
+"profile.exportData" = "导出我的数据";
+"profile.dangerZone" = "危险区";
+"profile.signOut" = "退出登录";
+"profile.deleteAccount" = "删除账户";
+"profile.deleteWarning" = "删除账户将永久删除您的所有数据。";
+"profile.signOutConfirm" = "您确定要退出登录吗？您保存的文章和偏好设置将被保留。";
+"profile.deleteConfirm" = "此操作无法撤销。您的所有数据将被永久删除。";
+
+// Account Management
+"account.accountManagement" = "账户管理";
+"account.email" = "电子邮件";
+"account.apple" = "Apple";
+"account.google" = "Google";
+
+// Errors
+"error.loadingProfile" = "加载配置文件失败";
+"error.translation.failed" = "翻译失败";
+"error.translation.unavailable" = "翻译服务不可用";
+
+// Search
+"search.placeholder" = "搜索文章...";
+"search.noResults" = "未找到文章";
+
+// Saved Articles
+"saved.title" = "已保存的文章";
+"saved.empty" = "尚无已保存的文章";
+
+// General
+"general.loading" = "加载中...";
+"general.retry" = "重试";
+"general.close" = "关闭";
+"general.share" = "分享";
+"general.save" = "保存";
+"general.delete" = "删除";
+"general.confirm" = "确认";
+
+// Theme
+"theme.system" = "系统";
+"theme.light" = "浅色";
+"theme.dark" = "深色";
+"theme.preview" = "预览";
+"theme.applies" = "适用于整个应用程序";
+"theme.auto" = "自动";
+
+// Languages (display names)
+"language.english" = "English";
+"language.hindi" = "हिन्दी";
+"language.spanish" = "Español";
+"language.french" = "Français";
+"language.german" = "Deutsch";
+"language.portuguese" = "Português";
+"language.mandarin" = "中文";
+
+// Data Export
+"export.title" = "导出我的数据";
+"export.options" = "导出选项";
+"export.description" = "您的数据将作为 JSON 文件导出，您可以保存或共享。";
+"export.complete" = "导出完成";
+"export.success" = "您的数据已成功导出。";
+
+// Privacy Policy
+"privacy.title" = "隐私和数据实践";
+"privacy.whatWeCollect" = "我们收集的内容";
+"privacy.minimal" = "以太世界收集最少的数据：";
+"privacy.dataSync" = "您的偏好设置和已保存的文章被同步到我们的安全后端。";
+"privacy.localStorage" = "本地存储";
+"privacy.storageDescription" = "所有数据都存储在您的设备本地：";
+"privacy.clearData" = "您可以随时从设置中清除所有缓存数据。";
+"privacy.notifications" = "通知";
+"privacy.notificationsDescription" = "后台刷新定期检查新文章并向您的设备发送本地通知。";
+"privacy.analytics" = "分析和诊断";
+"privacy.analyticsDescription" = "我们使用匿名分析和崩溃报告来改进应用程序。";
+"privacy.fullPolicy" = "完整隐私政策";
+"privacy.clearYourData" = "清除您的数据";
+"privacy.clearInstructions" = "转到设置 → 开发者工具 → 清除缓存以删除所有本地存储的数据。";
+"privacy.lastUpdated" = "最后更新：2026年1月";
+
+// Discover View
+"discover.clear" = "清除";
+"discover.authors" = "作者";
+"discover.articles" = "文章";
+"discover.noResults" = "尝试使用不同的搜索词或标签";
+
+// Author Profile
+"author.failedToLoad" = "加载配置文件失败";
+"author.twitter" = "Twitter";
+"author.posts" = "%d 篇文章";
+"author.storiesBy" = "%@ 的故事";
+"author.noArticles" = "尚无文章";
+
+// Offline
+"offline.title" = "离线下载";
+"offline.description" = "在没有互联网的情况下保持最近的文章可用";
+"offline.articlesCount" = "要保留的文章";
+"offline.storage" = "离线存储";
+"offline.storageLabel" = "存储";
+
+// Saved Articles
+"saved.noArticles" = "没有已保存的文章";
+"saved.emptyDescription" = "保存文章以便离线阅读";
+"saved.remove" = "删除";
+
+// Notifications
+"notifications.noTopics" = "目前没有可用主题";
+"notifications.selected" = "已选择：%@";
+"notifications.startTime" = "开始";
+"notifications.endTime" = "结束";
+"notifications.muteHours" = "将在选定的时间内静音通知。";
+
+// Errors
+"error.usingCached" = "使用缓存的数据";
+
+// Session Management
+"session.title" = "活跃会话";
+"session.description" = "这些是当前登录您账户的设备。您可以撤销除该设备外任何设备的访问权限。";
+"session.revoke" = "撤销";
+"session.thisDevice" = "（此设备）";
+"session.lastActive" = "最后活跃：%@";
+
+// Version
+"app.version" = "1.0.0";
+
+// Translation Cache
+"settings.cache.section" = "翻译缓存";
+"settings.cache.articles" = "缓存的文章";
+"settings.cache.translations" = "翻译条目";
+"settings.cache.size" = "缓存大小";
+"settings.cache.clear" = "清除缓存";
+"settings.cache.description" = "翻译被本地缓存以实现即时语言切换。清除缓存以释放空间或刷新翻译。";

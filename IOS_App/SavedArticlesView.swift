@@ -11,9 +11,9 @@ struct SavedArticlesView: View {
                         Image(systemName: "bookmark.slash")
                             .font(.system(size: 48))
                             .foregroundColor(.gray)
-                        Text("No Saved Articles")
+                        Text(LocalizedStringKey("saved.noArticles"))
                             .font(.headline)
-                        Text("Save articles to read them offline")
+                        Text(LocalizedStringKey("saved.emptyDescription"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -71,7 +71,7 @@ struct SavedArticlesView: View {
                             Button(role: .destructive) {
                                 viewModel.toggleSaved(article: article)
                             } label: {
-                                Label("Remove", systemImage: "bookmark.slash")
+                                Label(LocalizedStringKey("saved.remove"), systemImage: "bookmark.slash")
                             }
                         }
                     }

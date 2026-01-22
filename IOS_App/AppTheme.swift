@@ -9,9 +9,17 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: return "System"
-        case .light: return "Light"
-        case .dark: return "Dark"
+        case .system: return NSLocalizedString("theme.system", comment: "System theme")
+        case .light: return NSLocalizedString("theme.light", comment: "Light theme")
+        case .dark: return NSLocalizedString("theme.dark", comment: "Dark theme")
+        }
+    }
+    
+    var localizedTitle: LocalizedStringKey {
+        switch self {
+        case .system: return LocalizedStringKey("theme.system")
+        case .light: return LocalizedStringKey("theme.light")
+        case .dark: return LocalizedStringKey("theme.dark")
         }
     }
 
@@ -81,10 +89,10 @@ struct ThemePreviewCard: View {
                     Image(systemName: theme.icon)
                         .font(.headline)
                         .foregroundStyle(.secondary)
-                    Text("Preview")
+                    Text(LocalizedStringKey("theme.preview"))
                         .font(.headline)
                     Spacer()
-                    Text(theme.title)
+                    Text(LocalizedStringKey("theme.\(theme.rawValue)"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -123,7 +131,7 @@ struct ThemePreviewCard: View {
                         )
                 }
 
-                Text("Applies across the whole app")
+                Text(LocalizedStringKey("theme.applies"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -132,8 +140,8 @@ struct ThemePreviewCard: View {
         .frame(height: 140)
         .environment(\.colorScheme, previewColorScheme)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Theme preview")
-        .accessibilityValue(theme.title)
+        .accessibilityLabel(LocalizedStringKey("theme.preview"))
+        .accessibilityValue(LocalizedStringKey("theme.\(theme.rawValue)"))
     }
 }
 
@@ -161,7 +169,7 @@ private struct ThemeCard: View {
             VStack(spacing: 10) {
                 ThemePhonePreview(theme: theme)
 
-                Text(theme == .system ? "Auto" : theme.title)
+                Text(theme.localizedTitle)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(.primary)
@@ -190,9 +198,9 @@ private struct ThemeCard: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Theme")
-        .accessibilityValue(theme == .system ? "Auto" : theme.title)
-        .accessibilityHint(isSelected ? "Selected" : "Double tap to select")
+        .accessibilityLabel(LocalizedStringKey("theme.preview"))
+        .accessibilityValue(theme.localizedTitle)
+        .accessibilityHint(LocalizedStringKey("general.confirm"))
     }
 }
 
