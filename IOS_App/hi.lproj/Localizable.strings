@@ -203,3 +203,41 @@
 "settings.cache.size" = "कैश आकार";
 "settings.cache.clear" = "कैश साफ़ करें";
 "settings.cache.description" = "तुरंत भाषा स्विचिंग के लिए अनुवाद स्थानीय रूप से कैश किए जाते हैं। स्थान खाली करने या अनुवाद ताज़ा करने के लिए कैश साफ़ करें।";
+
+// Export type labels
+"export.savedArticles" = "Saved Articles";
+"export.savedArticles.description" = "Export all your saved articles as JSON";
+"export.readingHistory" = "Reading History";
+"export.readingHistory.description" = "Export your read articles and timestamps";
+"export.allData" = "All My Data";
+"export.allData.description" = "Export all data including preferences";
+
+// Privacy bullet points
+"privacy.bullet.savedArticles" = "Saved articles list";
+"privacy.bullet.preferences" = "App preferences (theme, language)";
+"privacy.bullet.lastUpdated" = "Last updated timestamp for refresh tracking";
+"privacy.bullet.notificationPreferences" = "Notification preferences";
+"privacy.bullet.analytics" = "Anonymous analytics (opt-in)";
+"privacy.bullet.userDefaults" = "UserDefaults for settings and preferences";
+"privacy.bullet.fileCache" = "File cache for article content";
+"privacy.bullet.urlCache" = "URLCache for network caching";
+"privacy.bullet.nsCache" = "NSCache for in-memory image caching";
+"privacy.fullPolicyAction" = "Read our full privacy policy";
+
+// Notifications
+"notifications.topics" = "Topics";
+"notifications.quietHours" = "Quiet Hours";
+"notifications.hour" = "Hour";
+
+// Errors
+"error.noConnection" = "No Connection";
+"error.failedToLoad" = "Failed to Load";
+
+// Login / OTP
+"login.enterVerification" = "Enter Verification Code";
+"login.otp.placeholder" = "Enter 6-digit code";
+"login.codeSent" = "Code sent to %@";
+"login.change" = "Change";
+"login.verify" = "Verify Code";
+"login.resendIn" = "Resend in %ds";
+"login.resend" = "Resend Code";

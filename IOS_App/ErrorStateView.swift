@@ -27,7 +27,7 @@ struct ErrorStateView: View {
             }
             
             VStack(spacing: 12) {
-                Text(isOffline ? "No Connection" : "Failed to Load")
+                Text(isOffline ? LocalizedStringKey("error.noConnection") : LocalizedStringKey("error.failedToLoad"))
                     .font(.system(.title2, design: .rounded))
                     .fontWeight(.bold)
                     .foregroundStyle(.primary)
@@ -45,7 +45,7 @@ struct ErrorStateView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                             .font(.caption)
-                        Text("Using cached data")
+                        Text(LocalizedStringKey("error.usingCached"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -71,7 +71,7 @@ struct ErrorStateView: View {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 14, weight: .semibold))
                     }
-                    Text("Retry")
+                    Text(LocalizedStringKey("general.retry"))
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)

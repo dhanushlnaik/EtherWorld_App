@@ -12,9 +12,9 @@ struct NotificationPreferencesView: View {
 
     var body: some View {
         List {
-            Section("Topics") {
+            Section(LocalizedStringKey("notifications.topics")) {
                 if allTags.isEmpty {
-                    Text("No topics available yet").foregroundStyle(.secondary)
+                    Text(LocalizedStringKey("notifications.noTopics")).foregroundStyle(.secondary)
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -31,30 +31,30 @@ struct NotificationPreferencesView: View {
                         .padding(.vertical, 4)
                     }
                     if !notificationTags.isEmpty {
-                        Text("Selected: \(notificationTags.joined(separator: ", "))")
+                        Text(String(format: NSLocalizedString("notifications.selected", comment: "Selected topics"), notificationTags.joined(separator: ", ")))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
 
-            Section("Quiet Hours") {
+            Section(LocalizedStringKey("notifications.quietHours")) {
                 HStack {
-                    Text("Start")
+                    Text(LocalizedStringKey("notifications.startTime"))
                     Spacer()
                     HourPicker(selectedHour: $quietStartHour)
                 }
                 HStack {
-                    Text("End")
+                    Text(LocalizedStringKey("notifications.endTime"))
                     Spacer()
                     HourPicker(selectedHour: $quietEndHour)
                 }
-                Text("Notifications will be muted between the selected hours.")
+                Text(LocalizedStringKey("notifications.muteHours"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("Preferences")
+        .navigationTitle(LocalizedStringKey("settings.notifications.prefs.title"))
         .onAppear {
             computeAllTags()
             notificationTags = UserDefaults.standard.stringArray(forKey: "notificationTags") ?? []
@@ -89,7 +89,7 @@ struct NotificationPreferencesView: View {
 private struct HourPicker: View {
     @Binding var selectedHour: Int
     var body: some View {
-        Picker("Hour", selection: $selectedHour) {
+        Picker(LocalizedStringKey("notifications.hour"), selection: $selectedHour) {
             ForEach(0..<24, id: \.self) { hour in
                 Text(String(format: "%02d:00", hour)).tag(hour)
             }

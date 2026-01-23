@@ -36,13 +36,13 @@ struct SessionManagementView: View {
                                 Text(session.deviceName)
                                     .font(.headline)
                                 if session.isCurrentDevice {
-                                    Text("(This device)")
+                                    Text(LocalizedStringKey("session.thisDevice"))
                                         .font(.caption)
                                         .foregroundStyle(.green)
                                 }
                             }
                             
-                            Text("Last active: \(session.lastActive.formatted(date: .abbreviated, time: .shortened))")
+                            Text(String(format: NSLocalizedString("session.lastActive", comment: "Last active"), session.lastActive.formatted(date: .abbreviated, time: .shortened)))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             
@@ -59,7 +59,7 @@ struct SessionManagementView: View {
                             Button(role: .destructive) {
                                 revokeSession(session)
                             } label: {
-                                Text("Revoke")
+                                Text(LocalizedStringKey("session.revoke"))
                                     .font(.caption)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -72,12 +72,12 @@ struct SessionManagementView: View {
                     .padding(.vertical, 8)
                 }
             } header: {
-                Text("Active Sessions")
+                Text(LocalizedStringKey("session.title"))
             } footer: {
-                Text("These are the devices currently signed in to your account. You can revoke access from any device except this one.")
+                Text(LocalizedStringKey("session.description"))
             }
         }
-        .navigationTitle("Sessions")
+        .navigationTitle(LocalizedStringKey("session.title"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             loadSessions()

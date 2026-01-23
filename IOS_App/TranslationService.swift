@@ -83,7 +83,11 @@ struct HTTPTranslationService: TranslationService {
                 continue
             }
             
-            let urlString = "\(endpoint.absoluteString)?q=\(encodedText)&langpair=auto|\(mappedLang)"
+            // Use explicit source language 'en' instead of 'auto' to avoid
+            // MyMemory rejecting auto-detection (it can return messages like
+            // "'AUTO' IS AN INVALID SOURCE LANGUAGE"). If you expect non-English
+            // source content, consider detecting source language separately.
+            let urlString = "\(endpoint.absoluteString)?q=\(encodedText)&langpair=en|\(mappedLang)"
             guard let url = URL(string: urlString) else {
                 results.append(text)
                 continue
@@ -111,16 +115,43 @@ struct HTTPTranslationService: TranslationService {
                 }
                 
                 // Parse MyMemory response format: {"responseStatus":200,"responseData":{"translatedText":"..."}}
-                if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let responseData = obj["responseData"] as? [String: Any],
-                   let translatedText = responseData["translatedText"] as? String,
-                   !translatedText.isEmpty {
-                    if index == 0 {
-                        print("✅ HTTPTranslationService: sample translation → \(translatedText.prefix(80))...")
+                if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    // Check the API-level response status first
+                    if let status = obj["responseStatus"] as? Int, status != 200 {
+                        print("⚠️ HTTPTranslationService: API responseStatus=\(status) for item #\(index), returning original text")
+                        // If rate-limited, stop further processing and return originals for remaining items
+                        if status == 429 {
+                            print("⏳ HTTPTranslationService: received 429 (rate limited), skipping remaining \(texts.count - index) items")
+                            results.append(contentsOf: texts[index...])
+                            break
+                        }
+                        results.append(text)
+                        continue
                     }
-                    results.append(translatedText)
+
+                    if let responseData = obj["responseData"] as? [String: Any],
+                       let translatedText = responseData["translatedText"] as? String,
+                       !translatedText.isEmpty {
+                        // Some API errors still surface inside translatedText (e.g. "'AUTO' IS AN INVALID SOURCE LANGUAGE ...").
+                        // Detect obvious erroneous responses and treat them as failures.
+                        let upper = translatedText.uppercased()
+                        if upper.contains("INVALID SOURCE") || upper.contains("'AUTO'") || upper.contains("INVALID SOURCE LANGUAGE") {
+                            print("⚠️ HTTPTranslationService: API returned invalid-source message for item #\(index): \(translatedText)")
+                            results.append(text)
+                        } else {
+                            // Many MyMemory responses are percent-encoded; decode when possible
+                            let decoded = translatedText.removingPercentEncoding ?? translatedText
+                            if index == 0 {
+                                print("✅ HTTPTranslationService: sample translation → \(decoded.prefix(80))...")
+                            }
+                            results.append(decoded)
+                        }
+                    } else {
+                        print("⚠️ HTTPTranslationService: unable to parse translation response for item #\(index), returning original text")
+                        results.append(text)
+                    }
                 } else {
-                    print("⚠️ HTTPTranslationService: unable to parse translation response for item #\(index), returning original text")
+                    print("⚠️ HTTPTranslationService: unable to parse JSON response for item #\(index), returning original text")
                     results.append(text)
                 }
             } catch {

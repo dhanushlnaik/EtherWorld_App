@@ -7,7 +7,7 @@ struct AuthorProfileView: View {
     var body: some View {
         ScrollView {
             if viewModel.isLoading {
-                ProgressView("Loading profile...")
+                ProgressView(LocalizedStringKey("author.loading"))
                     .padding()
             } else if let error = viewModel.errorMessage {
                 VStack(spacing: 16) {
@@ -19,7 +19,7 @@ struct AuthorProfileView: View {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Button("Retry") {
+                    Button(LocalizedStringKey("author.retry")) {
                         Task { await viewModel.loadAuthor(slug: authorSlug) }
                     }
                     .buttonStyle(.borderedProminent)
@@ -221,7 +221,7 @@ struct AuthorProfileView: View {
                 }
             }
         }
-        .navigationTitle("Author Profile")
+        .navigationTitle(LocalizedStringKey("author.profileTitle"))
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.loadAuthor(slug: authorSlug)

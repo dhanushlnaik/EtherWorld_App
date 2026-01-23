@@ -39,7 +39,7 @@ struct ArticleDetailView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(maxWidth: .infinity)
-                            .accessibilityLabel("Article cover image: \(article.title)")
+                            .accessibilityLabel(LocalizedStringKey("article.coverImageAccessibility"))
                             .transition(.opacity)
                     } placeholder: {
                         ZStack {
@@ -156,7 +156,7 @@ struct ArticleDetailView: View {
                             .foregroundColor(.blue)
                     }
                     .accessibilityLabel(LocalizedStringKey("article.share"))
-                    .accessibilityHint("Opens sharing options for this article")
+                    .accessibilityHint(LocalizedStringKey("article.shareHint"))
                     
                     Button(action: {
                         isSaved.toggle()
@@ -167,7 +167,7 @@ struct ArticleDetailView: View {
                             .foregroundColor(.blue)
                     }
                     .accessibilityLabel(LocalizedStringKey(isSaved ? "article.removeBookmark" : "article.bookmark"))
-                    .accessibilityHint("Double tap to \(isSaved ? "remove" : "add") this article to your saved articles")
+                    .accessibilityHint(LocalizedStringKey(isSaved ? "article.removeBookmarkHint" : "article.addBookmarkHint"))
                 }
             )
             .onAppear {
@@ -381,3 +381,4 @@ struct HTMLContentView: UIViewRepresentable {
         ))
     }
 }
+

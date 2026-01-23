@@ -58,3 +58,148 @@
 "home.allCaughtUp" = "Alles auf dem neuesten Stand!";
 "home.noStories" = "Es gibt derzeit keine neuen Geschichten in Ihrem\nFeed. Schauen Sie später wieder vorbei.";
 "home.refreshFeed" = "Feed Aktualisieren";
+
+// Article Detail
+"article.showMore" = "Read more";
+"article.showLess" = "Show less";
+"article.share" = "Share";
+"article.bookmark" = "Bookmark";
+"article.removeBookmark" = "Remove bookmark";
+"article.articleTitle" = "Article";
+"article.translating" = "Translating...";
+"article.translated" = "Translated to %@";
+"article.viewOriginal" = "View Original";
+"article.viewTranslated" = "View Translated";
+
+// Profile Settings
+"profile.title" = "My EW";
+"profile.activeSessions" = "Active Sessions";
+"profile.exportData" = "Export My Data";
+"profile.dangerZone" = "Danger Zone";
+"profile.signOut" = "Sign Out";
+"profile.deleteAccount" = "Delete Account";
+"profile.deleteWarning" = "Deleting your account will permanently remove all your data.";
+"profile.signOutConfirm" = "Are you sure you want to sign out? Your saved articles and preferences will be preserved.";
+"profile.deleteConfirm" = "This action cannot be undone. All your data will be permanently deleted.";
+
+// Account Management
+"account.accountManagement" = "Account Management";
+"account.email" = "Email";
+"account.apple" = "Apple";
+"account.google" = "Google";
+
+// Errors
+"error.loadingProfile" = "Failed to load profile";
+"error.translation.failed" = "Translation failed";
+"error.translation.unavailable" = "Translation service unavailable";
+
+// Search
+"search.placeholder" = "Search articles...";
+"search.noResults" = "No articles found";
+
+// Saved Articles
+"saved.title" = "Saved Articles";
+"saved.empty" = "No saved articles yet";
+
+// General
+"general.loading" = "Loading...";
+"general.retry" = "Retry";
+"general.close" = "Close";
+"general.share" = "Share";
+"general.save" = "Save";
+"general.delete" = "Delete";
+"general.confirm" = "Confirm";
+
+// Theme
+"theme.system" = "System";
+"theme.light" = "Light";
+"theme.dark" = "Dark";
+"theme.preview" = "Preview";
+"theme.applies" = "Applies across the whole app";
+"theme.auto" = "Auto";
+
+// Languages (display names)
+"language.english" = "English";
+"language.hindi" = "हिन्दी";
+"language.spanish" = "Español";
+"language.french" = "Français";
+"language.german" = "Deutsch";
+"language.portuguese" = "Português";
+"language.mandarin" = "中文";
+
+// Data Export
+"export.title" = "Export My Data";
+"export.options" = "Export Options";
+"export.description" = "Your data will be exported as JSON files that you can save or share.";
+"export.complete" = "Export Complete";
+"export.success" = "Your data has been exported successfully.";
+
+// Privacy Policy
+"privacy.title" = "Privacy & Data Practices";
+"privacy.whatWeCollect" = "What We Collect";
+"privacy.minimal" = "EtherWorld collects minimal data:";
+"privacy.dataSync" = "Your preferences and saved articles are synced to our secure backend to provide a consistent experience across your devices.";
+"privacy.localStorage" = "Local Storage";
+"privacy.storageDescription" = "All data is stored locally on your device using:";
+"privacy.clearData" = "You can clear all cached data anytime from Settings.";
+"privacy.notifications" = "Notifications";
+"privacy.notificationsDescription" = "Background refresh checks for new articles periodically and sends local notifications to your device. No data is sent to external servers for this feature—all processing happens locally.";
+"privacy.analytics" = "Analytics & Diagnostics";
+"privacy.analyticsDescription" = "We use anonymous analytics and crash reporting to improve the app. This data is not linked to your identity. You can disable this anytime in Settings.";
+"privacy.fullPolicy" = "Full Privacy Policy";
+"privacy.clearYourData" = "Clear Your Data";
+"privacy.clearInstructions" = "Visit Settings → Developer Tools → Clear Cache to remove all locally stored data, including saved articles, cache, and images.";
+"privacy.lastUpdated" = "Last Updated: January 2026";
+
+// Discover View
+"discover.clear" = "Clear";
+"discover.authors" = "Authors";
+"discover.articles" = "Articles";
+"discover.noResults" = "Try different search terms or tags";
+
+// Author Profile
+"author.failedToLoad" = "Failed to load profile";
+"author.twitter" = "Twitter";
+"author.posts" = "%d posts";
+"author.storiesBy" = "STORIES BY %@";
+"author.noArticles" = "No articles yet";
+
+// Offline
+"offline.title" = "Offline Downloads";
+"offline.description" = "Keep recent articles available without internet";
+"offline.articlesCount" = "Articles to keep";
+"offline.storage" = "Offline storage";
+"offline.storageLabel" = "Storage";
+
+// Saved Articles (empty state)
+"saved.noArticles" = "No Saved Articles";
+"saved.emptyDescription" = "Save articles to read them offline";
+"saved.remove" = "Remove";
+
+// Notifications extra
+"notifications.noTopics" = "No topics available yet";
+"notifications.selected" = "Selected: %@";
+"notifications.startTime" = "Start";
+"notifications.endTime" = "End";
+"notifications.muteHours" = "Notifications will be muted between the selected hours.";
+
+// Errors extra
+"error.usingCached" = "Using cached data";
+
+// Session Management
+"session.title" = "Active Sessions";
+"session.description" = "These are the devices currently signed in to your account. You can revoke access from any device except this one.";
+"session.revoke" = "Revoke";
+"session.thisDevice" = "(This device)";
+"session.lastActive" = "Last active: %@";
+
+// Version
+"app.version" = "1.0.0";
+
+// Translation Cache
+"settings.cache.section" = "Translation Cache";
+"settings.cache.articles" = "Cached Articles";
+"settings.cache.translations" = "Translation Entries";
+"settings.cache.size" = "Cache Size";
+"settings.cache.clear" = "Clear Cache";
+"settings.cache.description" = "Translations are cached locally for instant language switching. Clear cache to free up space or refresh translations.";

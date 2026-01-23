@@ -339,20 +339,14 @@ final class ArticleViewModel: ObservableObject {
     
     func lastUpdatedText() -> String {
         guard let lastUpdated = lastUpdated else { return "" }
-        let interval = Date().timeIntervalSince(lastUpdated)
-        
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes) minute\(minutes == 1 ? "" : "s") ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days) day\(days == 1 ? "" : "s") ago"
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        // Use app language if available so the result matches the selected language
+        let lang = UserDefaults.standard.string(forKey: "appLanguage")
+        if let lang = lang {
+            formatter.locale = Locale(identifier: lang)
         }
+        return formatter.localizedString(for: lastUpdated, relativeTo: Date())
     }
     
     private func setupLanguageObserver() {

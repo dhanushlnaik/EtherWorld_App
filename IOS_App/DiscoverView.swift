@@ -176,7 +176,7 @@ struct DiscoverView: View {
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.secondary)
-                    TextField("Search articles or authors...", text: $searchText)
+                    TextField(LocalizedStringKey("search.placeholder"), text: $searchText)
                         .textFieldStyle(.plain)
                     
                     if !searchText.isEmpty {
@@ -210,7 +210,14 @@ struct DiscoverView: View {
                                 sortOption = option
                             } label: {
                                 HStack {
-                                    Text(option.displayName)
+                                    switch option {
+                                    case .newest:
+                                        Text(LocalizedStringKey("discover.sort.newest"))
+                                    case .oldest:
+                                        Text(LocalizedStringKey("discover.sort.oldest"))
+                                    case .author:
+                                        Text(LocalizedStringKey("discover.sort.author"))
+                                    }
                                     if sortOption == option {
                                         Image(systemName: "checkmark")
                                     }
@@ -220,7 +227,14 @@ struct DiscoverView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.up.arrow.down")
-                            Text(sortOption.displayName)
+                            switch sortOption {
+                            case .newest:
+                                Text(LocalizedStringKey("discover.sort.newest"))
+                            case .oldest:
+                                Text(LocalizedStringKey("discover.sort.oldest"))
+                            case .author:
+                                Text(LocalizedStringKey("discover.sort.author"))
+                            }
                         }
                         .font(.subheadline)
                         .foregroundStyle(.blue)
@@ -274,7 +288,7 @@ struct DiscoverView: View {
                 // Results
                 if discoverViewModel.isLoading && discoverViewModel.articles.isEmpty {
                     Spacer()
-                    ProgressView("Loading articles...")
+                    ProgressView(LocalizedStringKey("discover.loading"))
                     Spacer()
                 } else if let error = discoverViewModel.errorMessage, discoverViewModel.articles.isEmpty {
                     ErrorStateView(
@@ -364,9 +378,9 @@ struct DiscoverView: View {
                 } else if filteredArticles.isEmpty {
                     Spacer()
                     ContentUnavailableView(
-                        "No Results",
+                        LocalizedStringKey("discover.noResultsTitle"),
                         systemImage: "magnifyingglass",
-                        description: Text("Try different search terms or tags")
+                        description: Text(LocalizedStringKey("discover.noResults"))
                     )
                     Spacer()
                 } else {
@@ -525,11 +539,11 @@ enum SortOption: String, CaseIterable {
     case oldest = "oldest"
     case author = "author"
     
-    var displayName: String {
+    var displayName: LocalizedStringKey {
         switch self {
-        case .newest: return "Newest First"
-        case .oldest: return "Oldest First"
-        case .author: return "By Author"
+        case .newest: return LocalizedStringKey("discover.sort.newest")
+        case .oldest: return LocalizedStringKey("discover.sort.oldest")
+        case .author: return LocalizedStringKey("discover.sort.author")
         }
     }
 }

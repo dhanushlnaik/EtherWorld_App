@@ -5,8 +5,7 @@ import Combine
 
 struct FeedHeaderView: View {
     @EnvironmentObject var viewModel: ArticleViewModel
-    @State private var isRefreshing = false
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -14,27 +13,12 @@ struct FeedHeaderView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
-                        Text(LocalizedStringKey("home.today"))
+                Text(LocalizedStringKey("home.today"))
                     .font(.largeTitle)
                     .fontWeight(.bold)
             }
-            
+
             Spacer()
-            
-            Button(action: {
-                isRefreshing = true
-                Task {
-                    await viewModel.load()
-                    try? await Task.sleep(nanoseconds: 500_000_000) // Brief feedback delay
-                    isRefreshing = false
-                }
-            }) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .rotationEffect(.degrees(isRefreshing ? 360 : 0))
-                    .animation(.linear(duration: 1.0).repeatForever(autoreverses: false), value: isRefreshing)
-            }
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
@@ -328,7 +312,7 @@ struct HeroArticleCard: View {
             NavigationStack(path: $navigationPath) {
                 contentView
                     .navigationBarTitleDisplayMode(.inline)
-                    .searchable(text: $viewModel.searchText, prompt: "Search articles")
+                    .searchable(text: $viewModel.searchText, prompt: LocalizedStringKey("home.searchPlaceholder"))
                     .task {
                         if notificationsEnabled {
                             NotificationManager.shared.checkForNewArticles(articles: viewModel.articles)

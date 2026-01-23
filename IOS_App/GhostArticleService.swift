@@ -201,44 +201,57 @@ struct GhostArticleService: PaginatedArticleService {
                 }
             }
             
-            // Second pass: translate a limited number of uncached articles via API
+            // Second pass: translate uncached articles via API in small batches
             if !articlesNeedingTranslation.isEmpty {
-                // To avoid hitting free API rate limits (HTTP 429), only translate
-                // a subset of articles per language change.
-                let maxToTranslate = 20
-                let limited = Array(articlesNeedingTranslation.prefix(maxToTranslate))
-                print("📡 API translating \(limited.count) uncached articles (of \(articlesNeedingTranslation.count) total)...")
+                let batchSize = 20
+                print("📡 API translating up to \(articlesNeedingTranslation.count) uncached articles in batches of \(batchSize) ...")
 
-                let titles = limited.map { $0.article.title }
-                let excerpts = limited.map { $0.article.excerpt }
-                
-                do {
-                    let tTitles = try await translationService.translateBatch(titles, to: appLanguageCode)
-                    let tExcerpts = try await translationService.translateBatch(excerpts, to: appLanguageCode)
-                    
-                    // Merge translations and cache them for the limited set
-                    for (i, (index, article)) in limited.enumerated() {
-                        var updated = article
-                        updated.translatedTitle = tTitles[i]
-                        updated.translatedExcerpt = tExcerpts[i]
-                        updated.isTranslated = true
-                        updated.translationLanguage = appLanguageCode
-                        mapped[index] = updated
-                        
-                        // Save to cache for future use
-                        await cacheService.saveTranslation(
-                            articleId: article.id,
-                            languageCode: appLanguageCode,
-                            title: tTitles[i],
-                            excerpt: tExcerpts[i]
-                        )
+                // Process in batches to reduce the chance of HTTP 429 rate-limits
+                var translatedCount = 0
+                for start in stride(from: 0, to: articlesNeedingTranslation.count, by: batchSize) {
+                    let end = Swift.min(start + batchSize, articlesNeedingTranslation.count)
+                    let slice = Array(articlesNeedingTranslation[start..<end])
+
+                    let titles = slice.map { $0.article.title }
+                    let excerpts = slice.map { $0.article.excerpt }
+
+                    do {
+                        let tTitles = try await translationService.translateBatch(titles, to: appLanguageCode)
+                        let tExcerpts = try await translationService.translateBatch(excerpts, to: appLanguageCode)
+
+                        for (i, (index, article)) in slice.enumerated() {
+                            var updated = article
+                            updated.translatedTitle = tTitles[i]
+                            updated.translatedExcerpt = tExcerpts[i]
+                            updated.isTranslated = true
+                            updated.translationLanguage = appLanguageCode
+                            mapped[index] = updated
+
+                            // Save to persistent cache for future quick loads
+                            await cacheService.saveTranslation(
+                                articleId: article.id,
+                                languageCode: appLanguageCode,
+                                title: tTitles[i],
+                                excerpt: tExcerpts[i]
+                            )
+
+                            translatedCount += 1
+                        }
+
+                        if let firstOriginal = titles.first, let firstTranslated = tTitles.first {
+                            print("✅ Sample title translation: '\(firstOriginal)' → '\(firstTranslated)'")
+                        }
+
+                        // Brief delay between batches to be kinder to free APIs
+                        try? await Task.sleep(nanoseconds: 200_000_000)
+
+                    } catch {
+                        print("⚠️ Batch translation failed (start=\(start)): \(error). Continuing with remaining batches where possible.")
                     }
-                    if let firstOriginal = titles.first, let firstTranslated = tTitles.first {
-                        print("✅ Sample title translation: '\(firstOriginal)' → '\(firstTranslated)'")
-                    }
-                    print("✅ Translation complete for \(limited.count) articles (cached)")
-                } catch {
-                    print("⚠️ Title/Excerpt translation failed, showing original text: \(error)")
+                }
+
+                if translatedCount > 0 {
+                    print("✅ Translated and cached \(translatedCount) article titles/excerpts for language \(appLanguageCode)")
                 }
             }
         }
@@ -259,20 +272,7 @@ struct GhostArticleService: PaginatedArticleService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let single = try decoder.decode(SinglePostResponse.self, from: data)
-        let html = single.posts.first?.html ?? ""
-
-        if appLanguageCode != "en" {
-            // Try to translate the HTML content; fall back to original on error
-            do {
-                let translated = try await translationService.translateHTML(html, to: appLanguageCode)
-                return translated
-            } catch {
-                print("⚠️ Article content translation failed: \(error)")
-                return html
-            }
-        }
-
-        return html
+        return single.posts.first?.html ?? ""
     }
     
     // Translate article content on demand

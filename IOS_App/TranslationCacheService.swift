@@ -45,6 +45,15 @@ actor TranslationCacheService {
         else {
             return nil
         }
+
+        // Detect and discard obviously invalid translations that actually
+        // contain API error messages (e.g. "'AUTO' IS AN INVALID SOURCE LANGUAGE...").
+        let combinedUpper = (title + " " + excerpt).uppercased()
+        if combinedUpper.contains("INVALID SOURCE") || combinedUpper.contains("'AUTO'") || combinedUpper.contains("LANGPAIR=") {
+            // Remove the bad cache entry so a fresh translation can be attempted
+            userDefaults.removeObject(forKey: key)
+            return nil
+        }
         
         let content = data["content"] as? String
         return (title, excerpt, content)

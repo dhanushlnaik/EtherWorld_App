@@ -118,7 +118,7 @@ struct LoginView: View {
                     
                     // Email Sign In
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(showOTPField ? "Enter Verification Code" : LocalizedStringKey("login.email.title"))
+                        Text(showOTPField ? LocalizedStringKey("login.enterVerification") : LocalizedStringKey("login.email.title"))
                             .font(.headline)
                             .foregroundColor(.primary)
                         
@@ -145,20 +145,22 @@ struct LoginView: View {
                                 Text(email)
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Button("Change") {
+                                Button {
                                     showOTPField = false
                                     otp = ""
                                     authManager.errorMessage = nil
+                                } label: {
+                                    Text(LocalizedStringKey("login.change"))
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
                                 }
-                                .font(.caption)
-                                .foregroundColor(.blue)
                             }
                             .padding()
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(12)
                             
                             // OTP Input
-                            TextField("Enter 6-digit code", text: $otp)
+                            TextField(LocalizedStringKey("login.otp.placeholder"), text: $otp)
                                 .textContentType(.oneTimeCode)
                                 .keyboardType(.numberPad)
                                 .focused($isOTPFocused)
@@ -176,7 +178,7 @@ struct LoginView: View {
                                     }
                                 }
                             
-                            Text("Code sent to \(email)")
+                            Text(String(format: NSLocalizedString("login.codeSent", comment: "Code sent to"), email))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -225,7 +227,7 @@ struct LoginView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text(showOTPField ? "Verify Code" : LocalizedStringKey("login.continue"))
+                                Text(showOTPField ? LocalizedStringKey("login.verify") : LocalizedStringKey("login.continue"))
                                     .fontWeight(.semibold)
                             }
                         }
@@ -248,13 +250,12 @@ struct LoginView: View {
                                 }
                             }
                         } label: {
-                            Text(resendSecondsRemaining > 0 ? "Resend in \(resendSecondsRemaining)s" : "Resend Code")
+                            Text(resendSecondsRemaining > 0 ? String(format: NSLocalizedString("login.resendIn", comment: "Resend in"), resendSecondsRemaining) : NSLocalizedString("login.resend", comment: "Resend Code"))
                                 .font(.subheadline)
                                 .foregroundColor(.blue)
                         }
                         .disabled(authManager.isLoading || resendSecondsRemaining > 0)
                     }
-                    
                     if let error = authManager.errorMessage {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")

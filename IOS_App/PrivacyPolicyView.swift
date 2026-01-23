@@ -7,7 +7,7 @@ struct PrivacyPolicyView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Privacy & Data Practices")
+                    Text(LocalizedStringKey("privacy.title"))
                         .font(.title2)
                         .fontWeight(.bold)
                         .padding(.bottom, 8)
@@ -15,22 +15,22 @@ struct PrivacyPolicyView: View {
                     // Data Collection
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("What We Collect", systemImage: "info.circle")
+                            Label(LocalizedStringKey("privacy.whatWeCollect"), systemImage: "info.circle")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("EtherWorld collects minimal data:")
+                            Text(LocalizedStringKey("privacy.minimal"))
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                BulletPoint(text: "Saved articles list")
-                                BulletPoint(text: "App preferences (theme, language)")
-                                BulletPoint(text: "Last updated timestamp for refresh tracking")
-                                BulletPoint(text: "Notification preferences")
-                                BulletPoint(text: "Anonymous analytics (opt-in)")
+                                BulletPoint(textKey: "privacy.bullet.savedArticles")
+                                BulletPoint(textKey: "privacy.bullet.preferences")
+                                BulletPoint(textKey: "privacy.bullet.lastUpdated")
+                                BulletPoint(textKey: "privacy.bullet.notificationPreferences")
+                                BulletPoint(textKey: "privacy.bullet.analytics")
                             }
                             .padding(.top, 8)
                             
-                            Text("Your preferences and saved articles are synced to our secure backend to provide a consistent experience across your devices.")
+                            Text(LocalizedStringKey("privacy.dataSync"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 8)
@@ -42,21 +42,21 @@ struct PrivacyPolicyView: View {
                     // Local Storage
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Local Storage", systemImage: "externaldrive")
+                            Label(LocalizedStringKey("privacy.localStorage"), systemImage: "externaldrive")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("All data is stored locally on your device using:")
+                            Text(LocalizedStringKey("privacy.storageDescription"))
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                BulletPoint(text: "UserDefaults for settings and preferences")
-                                BulletPoint(text: "File cache for article content")
-                                BulletPoint(text: "URLCache for network caching")
-                                BulletPoint(text: "NSCache for in-memory image caching")
+                                BulletPoint(textKey: "privacy.bullet.userDefaults")
+                                BulletPoint(textKey: "privacy.bullet.fileCache")
+                                BulletPoint(textKey: "privacy.bullet.urlCache")
+                                BulletPoint(textKey: "privacy.bullet.nsCache")
                             }
                             .padding(.top, 8)
                             
-                            Text("You can clear all cached data anytime from Settings.")
+                            Text(LocalizedStringKey("privacy.clearData"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 8)
@@ -68,11 +68,11 @@ struct PrivacyPolicyView: View {
                     // Notifications
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Notifications", systemImage: "bell")
+                            Label(LocalizedStringKey("privacy.notifications"), systemImage: "bell")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("Background refresh checks for new articles periodically and sends local notifications to your device. No data is sent to external servers for this feature—all processing happens locally.")
+                            Text(LocalizedStringKey("privacy.notificationsDescription"))
                                 .font(.body)
                         }
                     }
@@ -82,11 +82,11 @@ struct PrivacyPolicyView: View {
                     // Analytics & Diagnostics
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Analytics & Diagnostics", systemImage: "chart.bar")
+                            Label(LocalizedStringKey("privacy.analytics"), systemImage: "chart.bar")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("We use anonymous analytics and crash reporting to improve the app. This data is not linked to your identity. You can disable this anytime in Settings.")
+                            Text(LocalizedStringKey("privacy.analyticsDescription"))
                                 .font(.body)
                         }
                     }
@@ -96,11 +96,11 @@ struct PrivacyPolicyView: View {
                     // Full Policy Link
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Full Privacy Policy", systemImage: "doc.text")
+                            Label(LocalizedStringKey("privacy.fullPolicy"), systemImage: "doc.text")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Link("Read our full privacy policy", destination: URL(string: "https://etherworld.co/privacy")!)
+                            Link(LocalizedStringKey("privacy.fullPolicyAction"), destination: URL(string: "https://etherworld.co/privacy")!)
                                 .font(.body)
                                 .foregroundStyle(.blue)
                         }
@@ -111,18 +111,18 @@ struct PrivacyPolicyView: View {
                     // Data Deletion
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Clear Your Data", systemImage: "trash")
+                            Label(LocalizedStringKey("privacy.clearYourData"), systemImage: "trash")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text("Visit Settings → Developer Tools → Clear Cache to remove all locally stored data, including saved articles, cache, and images.")
+                            Text(LocalizedStringKey("privacy.clearInstructions"))
                                 .font(.body)
                         }
                     }
                     
                     Spacer()
                     
-                    Text("Last Updated: January 2026")
+                    Text(LocalizedStringKey("privacy.lastUpdated"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -131,7 +131,7 @@ struct PrivacyPolicyView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 20)
             }
-            .navigationTitle("Privacy Policy")
+            .navigationTitle(LocalizedStringKey("privacy.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -148,13 +148,13 @@ struct PrivacyPolicyView: View {
 }
 
 struct BulletPoint: View {
-    let text: String
+    let textKey: String
     
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             Text("•")
                 .font(.headline)
-            Text(text)
+            Text(LocalizedStringKey(textKey))
                 .font(.body)
         }
     }

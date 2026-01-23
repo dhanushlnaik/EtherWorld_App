@@ -7,24 +7,24 @@ struct DataExportView: View {
     @State private var exportComplete = false
     @State private var shareURL: URL?
     
-    enum ExportType {
+    enum ExportType: Hashable {
         case savedArticles
         case readingHistory
         case allData
         
-        var title: String {
+        var titleKey: String {
             switch self {
-            case .savedArticles: return "Saved Articles"
-            case .readingHistory: return "Reading History"
-            case .allData: return "All My Data"
+            case .savedArticles: return "export.savedArticles"
+            case .readingHistory: return "export.readingHistory"
+            case .allData: return "export.allData"
             }
         }
         
-        var description: String {
+        var descriptionKey: String {
             switch self {
-            case .savedArticles: return "Export all your saved articles as JSON"
-            case .readingHistory: return "Export your read articles and timestamps"
-            case .allData: return "Export all data including preferences"
+            case .savedArticles: return "export.savedArticles.description"
+            case .readingHistory: return "export.readingHistory.description"
+            case .allData: return "export.allData.description"
             }
         }
         
@@ -41,7 +41,7 @@ struct DataExportView: View {
         NavigationStack {
             List {
                 Section {
-                    ForEach([ExportType.savedArticles, .readingHistory, .allData], id: \.title) { type in
+                    ForEach([ExportType.savedArticles, .readingHistory, .allData], id: \.self) { type in
                         Button {
                             exportData(type: type)
                         } label: {
@@ -52,10 +52,10 @@ struct DataExportView: View {
                                     .frame(width: 30)
                                 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(type.title)
+                                    Text(LocalizedStringKey(type.titleKey))
                                         .font(.headline)
                                         .foregroundStyle(.primary)
-                                    Text(type.description)
+                                    Text(LocalizedStringKey(type.descriptionKey))
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -74,29 +74,31 @@ struct DataExportView: View {
                         .disabled(isExporting)
                     }
                 } header: {
-                    Text("Export Options")
+                    Text(LocalizedStringKey("export.options"))
                 } footer: {
-                    Text("Your data will be exported as JSON files that you can save or share.")
+                    Text(LocalizedStringKey("export.description"))
                 }
             }
-            .navigationTitle("Export My Data")
+            .navigationTitle(LocalizedStringKey("export.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text(LocalizedStringKey("general.close"))
                     }
                 }
             }
-            .alert("Export Complete", isPresented: $exportComplete) {
-                Button("Share") {
+            .alert(LocalizedStringKey("export.complete"), isPresented: $exportComplete) {
+                Button(LocalizedStringKey("general.share")) {
                     if let url = shareURL {
                         shareFile(url: url)
                     }
                 }
-                Button("OK", role: .cancel) {}
+                Button(LocalizedStringKey("general.close"), role: .cancel) {}
             } message: {
-                Text("Your data has been exported successfully.")
+                Text(LocalizedStringKey("export.success"))
             }
         }
     }
