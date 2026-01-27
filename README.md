@@ -73,20 +73,20 @@ The app requests the following permissions:
 - [x] Privacy descriptions added
 - [x] App Transport Security configured
 - [x] Firebase Bundle ID updated
-- [ ] Remove dev skip login button before production
+- [x] Remove dev skip login button before production
 - [ ] Test on physical device
 
 ### Testing Requirements
-- [ ] Test Apple Sign In
-- [ ] Test Google Sign In
-- [ ] Test Magic Link authentication
-- [ ] Test offline mode (airplane mode)
-- [ ] Test bookmarking and read status
-- [ ] Test background refresh
-- [ ] Test push notifications
-- [ ] Test on iPad
-- [ ] Test theme switching
+- [x] Test Apple Sign In
+- [x] Test Google Sign In
+- [x] Test Magic Link authentication
+- [x] Test offline mode (airplane mode)
+- [x] Test bookmarking and read status
+- [x] Test background refresh
+- [x] Test on iPad
+- [x] Test theme switching
 - [ ] Test language switching
+- [ ] Test push notifications
 
 ### App Store Connect
 - [ ] Create app listing

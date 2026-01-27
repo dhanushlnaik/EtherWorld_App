@@ -246,30 +246,8 @@ final class AuthenticationManager: ObservableObject {
             }
         }
         #else
-        // DEMO MODE: Allow Apple sign-in without Firebase
-        let userID = appleIDCredential.user
-        let email = appleIDCredential.email ?? "\(userID)@privaterelay.appleid.com"
-        let fullName = appleIDCredential.fullName
-        let name = [fullName?.givenName, fullName?.familyName]
-            .compactMap { $0 }
-            .joined(separator: " ")
-        
-        let token = UUID().uuidString
-        let user = User(
-            id: userID,
-            email: email,
-            name: name.isEmpty ? nil : name,
-            authProvider: .apple
-        )
-        
-        if KeychainHelper.shared.save(token, forKey: tokenKey) {
-            saveUserData(user)
-            isAuthenticated = true
-            currentUser = user
-        } else {
-            errorMessage = "Failed to save authentication token"
-        }
-        print("✅ Demo Apple Sign-In successful")
+        errorMessage = "Apple Sign-In requires FirebaseAuth. Please ensure Firebase is configured."
+        return
         #endif
     }
     

@@ -76,7 +76,7 @@ struct ArticleRowView: View {
                                     .fontWeight(.medium)
                                     .foregroundColor(.blue)
                                 
-                                Text(article.publishedAt.formatted(date: .abbreviated, time: .omitted))
+                                Text(article.publishedAt, format: Date.FormatStyle(date: .abbreviated, time: .omitted))
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }

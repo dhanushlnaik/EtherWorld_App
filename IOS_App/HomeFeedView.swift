@@ -9,7 +9,7 @@ struct FeedHeaderView: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(Date().formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+                Text(Date(), format: .dateTime.weekday(.wide).month(.abbreviated).day())
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .textCase(.uppercase)
@@ -167,7 +167,7 @@ struct HeroArticleCard: View {
         var body: some View {
             VStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(Date().formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+                    Text(Date(), format: .dateTime.weekday(.wide).month(.abbreviated).day())
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .textCase(.uppercase)
@@ -312,7 +312,7 @@ struct HeroArticleCard: View {
             NavigationStack(path: $navigationPath) {
                 contentView
                     .navigationBarTitleDisplayMode(.inline)
-                    .searchable(text: $viewModel.searchText, prompt: LocalizedStringKey("home.searchPlaceholder"))
+                    .searchable(text: $viewModel.searchText, prompt: LocalizedStringKey("search.placeholder"))
                     .task {
                         if notificationsEnabled {
                             NotificationManager.shared.checkForNewArticles(articles: viewModel.articles)

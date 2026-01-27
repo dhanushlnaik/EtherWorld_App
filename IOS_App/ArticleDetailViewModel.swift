@@ -53,10 +53,22 @@ final class ArticleDetailViewModel: ObservableObject {
                 translationLanguage: article.translationLanguage
             )
 
-            // For non-English app languages, always attempt to translate the
-            // full article content when we don't already have a translation
-            // for the current language.
-            if appLanguageCode != "en" && updated.translationLanguage != appLanguageCode {
+            // For non-English app languages, attempt to translate the
+            // title/excerpt and full article content when we don't already have them.
+            if appLanguageCode != "en" {
+                if updated.translatedTitle == nil || updated.translatedTitle?.isEmpty == true || updated.translatedExcerpt == nil || updated.translatedExcerpt?.isEmpty == true {
+                    do {
+                        let pair = try await ghost.translateTitleAndExcerpt(updated, to: appLanguageCode)
+                        updated.translatedTitle = pair.title
+                        updated.translatedExcerpt = pair.excerpt
+                        updated.isTranslated = true
+                        updated.translationLanguage = appLanguageCode
+                    } catch {
+                        print("⚠️ Article title/excerpt translation failed: \(error)")
+                    }
+                }
+
+                if updated.translatedContent == nil || updated.translatedContent?.isEmpty == true {
                 do {
                     let translatedHTML = try await ghost.translateArticleContent(updated, to: appLanguageCode)
                     updated.translatedContent = translatedHTML
@@ -66,12 +78,7 @@ final class ArticleDetailViewModel: ObservableObject {
                     print("⚠️ Article full-text translation failed: \(error)")
                     // Keep original HTML if translation fails
                 }
-            }
-            
-            // Mark article as translated for the current language to avoid re-translating
-            if appLanguageCode != "en" {
-                updated.isTranslated = true
-                updated.translationLanguage = appLanguageCode
+                }
             }
 
             article = updated

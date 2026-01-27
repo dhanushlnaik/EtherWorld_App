@@ -7,10 +7,16 @@ actor TranslationCacheService {
     
     private let userDefaults = UserDefaults.standard
     private let cachePrefix = "translations"
+    private let contentCachePrefix = "translationContent"
     
     /// Cache key format: translations_articleId_languageCode
     private func cacheKey(articleId: String, languageCode: String) -> String {
         return "\(cachePrefix)_\(articleId)_\(languageCode)"
+    }
+
+    /// Cache key format: translationContent_articleId_languageCode
+    private func contentCacheKey(articleId: String, languageCode: String) -> String {
+        return "\(contentCachePrefix)_\(articleId)_\(languageCode)"
     }
     
     /// Store translated article data
@@ -58,6 +64,31 @@ actor TranslationCacheService {
         let content = data["content"] as? String
         return (title, excerpt, content)
     }
+
+    /// Store translated HTML content for an article without affecting title/excerpt cache.
+    func saveContentTranslation(articleId: String, languageCode: String, contentHTML: String) {
+        let key = contentCacheKey(articleId: articleId, languageCode: languageCode)
+        let data = [
+            "content": contentHTML,
+            "timestamp": Date().timeIntervalSince1970
+        ] as [String: Any]
+        userDefaults.set(data, forKey: key)
+    }
+
+    /// Retrieve cached translated HTML content if available.
+    func getContentTranslation(articleId: String, languageCode: String) -> String? {
+        let key = contentCacheKey(articleId: articleId, languageCode: languageCode)
+        guard let data = userDefaults.dictionary(forKey: key) else { return nil }
+        guard let content = data["content"] as? String, !content.isEmpty else { return nil }
+
+        let upper = content.uppercased()
+        if upper.contains("INVALID SOURCE") || upper.contains("'AUTO'") || upper.contains("LANGPAIR=") {
+            userDefaults.removeObject(forKey: key)
+            return nil
+        }
+
+        return content
+    }
     
     /// Check if we have translation for article in target language
     func hasTranslation(articleId: String, languageCode: String) -> Bool {
@@ -91,9 +122,10 @@ actor TranslationCacheService {
     func clearTranslationsForArticle(articleId: String) {
         let allKeys = userDefaults.dictionaryRepresentation().keys
         let prefix = "\(cachePrefix)_\(articleId)_"
+        let contentPrefix = "\(contentCachePrefix)_\(articleId)_"
         
         for key in allKeys {
-            if key.hasPrefix(prefix) {
+            if key.hasPrefix(prefix) || key.hasPrefix(contentPrefix) {
                 userDefaults.removeObject(forKey: key)
             }
         }
@@ -103,7 +135,7 @@ actor TranslationCacheService {
     func clearAllTranslations() {
         let allKeys = userDefaults.dictionaryRepresentation().keys
         for key in allKeys {
-            if key.hasPrefix(cachePrefix) {
+            if key.hasPrefix(cachePrefix) || key.hasPrefix(contentCachePrefix) {
                 userDefaults.removeObject(forKey: key)
             }
         }
@@ -112,7 +144,7 @@ actor TranslationCacheService {
     /// Get cache statistics
     func getCacheStats() -> (articleCount: Int, totalEntries: Int, approximateSizeKB: Int) {
         let allKeys = userDefaults.dictionaryRepresentation().keys
-        let translationKeys = allKeys.filter { $0.hasPrefix(cachePrefix) }
+        let translationKeys = allKeys.filter { $0.hasPrefix(cachePrefix) || $0.hasPrefix(contentCachePrefix) }
         
         var articleIds = Set<String>()
         var totalSize = 0

@@ -190,13 +190,13 @@ struct AuthorProfileView: View {
                                                     .textCase(.uppercase)
                                             }
                                             
-                                            Text(article.title)
+                                            Text(article.displayTitle)
                                                 .font(.headline)
                                                 .fontWeight(.semibold)
                                                 .lineLimit(2)
                                                 .foregroundColor(.primary)
                                             
-                                            Text(article.excerpt)
+                                            Text(article.displayExcerpt)
                                                 .font(.subheadline)
                                                 .foregroundColor(.secondary)
                                                 .lineLimit(3)

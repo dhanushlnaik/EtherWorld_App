@@ -69,97 +69,179 @@ struct HTTPTranslationService: TranslationService {
 
         print("🌐 HTTPTranslationService: requested translation for \(texts.count) texts → \(targetLang) (mapped: \(mappedLang))")
 
-        // MyMemory API format: /get?q=TEXT&langpair=auto|TARGET
-        var results: [String] = []
+        func encodeQueryParam(_ value: String) -> String? {
+            // urlQueryAllowed does NOT escape "&" which would terminate the q= parameter.
+            // Use a stricter allowed set so q= is always one parameter.
+            var allowed = CharacterSet.urlQueryAllowed
+            allowed.remove(charactersIn: "&=?+\n")
+            return value.addingPercentEncoding(withAllowedCharacters: allowed)
+        }
 
-        for (index, text) in texts.enumerated() {
-            guard !text.isEmpty else {
-                results.append(text)
-                continue
+        func translateSingle(_ text: String, itemIndex: Int) async -> String {
+            guard !text.isEmpty else { return text }
+
+            guard let encodedText = encodeQueryParam(text) else {
+                return text
             }
-            
-            guard let encodedText = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                results.append(text)
-                continue
-            }
-            
-            // Use explicit source language 'en' instead of 'auto' to avoid
-            // MyMemory rejecting auto-detection (it can return messages like
-            // "'AUTO' IS AN INVALID SOURCE LANGUAGE"). If you expect non-English
-            // source content, consider detecting source language separately.
+
             let urlString = "\(endpoint.absoluteString)?q=\(encodedText)&langpair=en|\(mappedLang)"
             guard let url = URL(string: urlString) else {
-                results.append(text)
-                continue
+                return text
             }
-            
+
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
             request.setValue("application/json", forHTTPHeaderField: "Accept")
-            
+
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)
                 if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-                    print("⚠️ HTTPTranslationService: non-2xx status \(http.statusCode) for item #\(index)")
-
-                    // If we get rate-limited (429), stop hammering the API and
-                    // return originals for the remaining items.
-                    if http.statusCode == 429 {
-                        print("⏳ HTTPTranslationService: received 429 (rate limited), skipping remaining \(texts.count - index) items")
-                        results.append(contentsOf: texts[index...])
-                        break
-                    }
-
-                    results.append(text)
-                    continue
+                    print("⚠️ HTTPTranslationService: non-2xx status \(http.statusCode) for item #\(itemIndex)")
+                    return text
                 }
-                
-                // Parse MyMemory response format: {"responseStatus":200,"responseData":{"translatedText":"..."}}
+
                 if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    // Check the API-level response status first
                     if let status = obj["responseStatus"] as? Int, status != 200 {
-                        print("⚠️ HTTPTranslationService: API responseStatus=\(status) for item #\(index), returning original text")
-                        // If rate-limited, stop further processing and return originals for remaining items
-                        if status == 429 {
-                            print("⏳ HTTPTranslationService: received 429 (rate limited), skipping remaining \(texts.count - index) items")
-                            results.append(contentsOf: texts[index...])
-                            break
-                        }
-                        results.append(text)
-                        continue
+                        print("⚠️ HTTPTranslationService: API responseStatus=\(status) for item #\(itemIndex), returning original text")
+                        return text
                     }
 
                     if let responseData = obj["responseData"] as? [String: Any],
                        let translatedText = responseData["translatedText"] as? String,
                        !translatedText.isEmpty {
-                        // Some API errors still surface inside translatedText (e.g. "'AUTO' IS AN INVALID SOURCE LANGUAGE ...").
-                        // Detect obvious erroneous responses and treat them as failures.
                         let upper = translatedText.uppercased()
                         if upper.contains("INVALID SOURCE") || upper.contains("'AUTO'") || upper.contains("INVALID SOURCE LANGUAGE") {
-                            print("⚠️ HTTPTranslationService: API returned invalid-source message for item #\(index): \(translatedText)")
-                            results.append(text)
-                        } else {
-                            // Many MyMemory responses are percent-encoded; decode when possible
-                            let decoded = translatedText.removingPercentEncoding ?? translatedText
-                            if index == 0 {
-                                print("✅ HTTPTranslationService: sample translation → \(decoded.prefix(80))...")
-                            }
-                            results.append(decoded)
+                            print("⚠️ HTTPTranslationService: API returned invalid-source message for item #\(itemIndex): \(translatedText)")
+                            return text
                         }
-                    } else {
-                        print("⚠️ HTTPTranslationService: unable to parse translation response for item #\(index), returning original text")
-                        results.append(text)
+                        return decodeAndCleanText(translatedText)
                     }
-                } else {
-                    print("⚠️ HTTPTranslationService: unable to parse JSON response for item #\(index), returning original text")
-                    results.append(text)
                 }
+
+                return text
             } catch {
-                print("❌ HTTPTranslationService: request failed for item #\(index) with error: \(error)")
-                results.append(text)
+                print("❌ HTTPTranslationService: request failed for item #\(itemIndex) with error: \(error)")
+                return text
             }
         }
-        
+
+        func translateJoined(_ joined: String, chunkIndex: Int) async throws -> String {
+            guard let encodedText = encodeQueryParam(joined) else {
+                return joined
+            }
+
+            let urlString = "\(endpoint.absoluteString)?q=\(encodedText)&langpair=en|\(mappedLang)"
+            guard let url = URL(string: urlString) else {
+                return joined
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                if http.statusCode == 429 {
+                    throw URLError(.cannotLoadFromNetwork)
+                }
+                print("⚠️ HTTPTranslationService: non-2xx status \(http.statusCode) for chunk #\(chunkIndex)")
+                return joined
+            }
+
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let status = obj["responseStatus"] as? Int, status != 200 {
+                    if status == 429 {
+                        throw URLError(.cannotLoadFromNetwork)
+                    }
+                    print("⚠️ HTTPTranslationService: API responseStatus=\(status) for chunk #\(chunkIndex), returning original")
+                    return joined
+                }
+
+                if let responseData = obj["responseData"] as? [String: Any],
+                   let translatedText = responseData["translatedText"] as? String,
+                   !translatedText.isEmpty {
+                    let upper = translatedText.uppercased()
+                    if upper.contains("INVALID SOURCE") || upper.contains("'AUTO'") || upper.contains("INVALID SOURCE LANGUAGE") {
+                        print("⚠️ HTTPTranslationService: API returned invalid-source message for chunk #\(chunkIndex): \(translatedText)")
+                        return joined
+                    }
+                    return decodeAndCleanText(translatedText)
+                }
+            }
+
+            return joined
+        }
+
+        // Real batching strategy: join multiple strings with a delimiter and translate in fewer calls.
+        // This dramatically reduces 429s compared to 1-call-per-item.
+        let delimiter = "\n<<<EW_DELIM_9f3b9b>>>\n"
+        let maxJoinedChars = 1200
+
+        var results: [String] = []
+        results.reserveCapacity(texts.count)
+
+        var i = 0
+        var chunkIndex = 0
+        while i < texts.count {
+            var current: [String] = []
+            current.reserveCapacity(12)
+            var currentLen = 0
+
+            // Build a chunk by character budget
+            while i < texts.count {
+                let t = texts[i]
+                let addLen = t.count + (current.isEmpty ? 0 : delimiter.count)
+                if !current.isEmpty, currentLen + addLen > maxJoinedChars {
+                    break
+                }
+                // Always include at least one item
+                if current.isEmpty || currentLen + addLen <= maxJoinedChars {
+                    current.append(t)
+                    currentLen += addLen
+                    i += 1
+                } else {
+                    break
+                }
+            }
+
+            // If the chunk is a single item, do the normal single-item flow.
+            if current.count == 1 {
+                let translated = await translateSingle(current[0], itemIndex: results.count)
+                if results.isEmpty {
+                    print("✅ HTTPTranslationService: sample translation → \(translated.prefix(80))...")
+                }
+                results.append(translated)
+                chunkIndex += 1
+                continue
+            }
+
+            let joined = current.joined(separator: delimiter)
+
+            do {
+                let translatedJoined = try await translateJoined(joined, chunkIndex: chunkIndex)
+                let parts = translatedJoined.components(separatedBy: delimiter)
+                if parts.count == current.count {
+                    if results.isEmpty, let first = parts.first {
+                        print("✅ HTTPTranslationService: sample translation → \(first.prefix(80))...")
+                    }
+                    results.append(contentsOf: parts)
+                } else {
+                    // If delimiter got altered by translation, fall back to per-item for this chunk.
+                    print("⚠️ HTTPTranslationService: delimiter split mismatch (got \(parts.count), expected \(current.count)); falling back to per-item for chunk #\(chunkIndex)")
+                    for (offset, t) in current.enumerated() {
+                        let translated = await translateSingle(t, itemIndex: results.count + offset)
+                        results.append(translated)
+                    }
+                }
+            } catch {
+                // If rate-limited or failed, return originals for this chunk.
+                print("⏳ HTTPTranslationService: batch chunk #\(chunkIndex) failed (\(error)), returning originals")
+                results.append(contentsOf: current)
+            }
+
+            chunkIndex += 1
+        }
+
         return results
     }
     
@@ -174,20 +256,22 @@ struct HTTPTranslationService: TranslationService {
         
         // Extract text content from HTML to translate
         let plainText = stripHTML(html)
-        
-        // If very short, just translate as-is
-        if plainText.count < 50 {
-            let translated = try await translate(html, to: targetLang)
-            await HTTPTranslationService.cacheManager.setCached(translated, for: cacheKey)
-            return translated
+
+        guard !plainText.isEmpty else {
+            return html
         }
-        
-        // For longer HTML, split into sentences and translate
-        let sentences = splitIntoSentences(plainText)
+
+        // Split into sentences/chunks and translate
+        var sentences = splitIntoSentences(plainText)
+        if sentences.isEmpty {
+            sentences = [plainText]
+        }
+
         let translatedSentences = try await translateBatch(sentences, to: targetLang)
-        
-        // Reconstruct HTML with translated text
-        let result = replaceHTMLContent(html, with: translatedSentences)
+        let cleanedTranslatedSentences = translatedSentences.map { decodeAndCleanText($0) }
+
+        // Reconstruct HTML with translated text (best effort, avoids touching href/src, etc.)
+        let result = replaceHTMLContent(html, with: cleanedTranslatedSentences)
         
         await HTTPTranslationService.cacheManager.setCached(result, for: cacheKey)
         
@@ -213,6 +297,39 @@ struct HTTPTranslationService: TranslationService {
             .replacingOccurrences(of: "&lt;", with: "<")
             .replacingOccurrences(of: "&gt;", with: ">")
             .replacingOccurrences(of: "&amp;", with: "&")
+    }
+
+    private func decodeAndCleanText(_ text: String) -> String {
+        // Decode percent-encoding when present
+        var decoded = text.removingPercentEncoding ?? text
+
+        // Common percent escapes that we see leak into UI as literals
+        if decoded.contains("%") {
+            decoded = decoded
+                .replacingOccurrences(of: "%20", with: " ")
+                .replacingOccurrences(of: "% 20", with: " ")
+                .replacingOccurrences(of: "%23", with: "#")
+                .replacingOccurrences(of: "% 23", with: "#")
+                .replacingOccurrences(of: "%2C", with: ",")
+                .replacingOccurrences(of: "% 2C", with: ",")
+                .replacingOccurrences(of: "%2E", with: ".")
+                .replacingOccurrences(of: "% 2E", with: ".")
+                .replacingOccurrences(of: "%2D", with: "-")
+                .replacingOccurrences(of: "% 2D", with: "-")
+
+            // Remove any remaining percent-escapes like "%3A" or "% 3A"
+            if let regex = try? NSRegularExpression(pattern: "%\\s?[0-9A-Fa-f]{2}") {
+                let range = NSRange(decoded.startIndex..<decoded.endIndex, in: decoded)
+                decoded = regex.stringByReplacingMatches(in: decoded, options: [], range: range, withTemplate: " ")
+            }
+        }
+
+        // Collapse excessive whitespace introduced by cleaning
+        decoded = decoded
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return decoded
     }
     
     private func splitIntoSentences(_ text: String) -> [String] {

@@ -1,16 +1,15 @@
 import Foundation
 
-#if canImport(Translate)
-import Translate
+#if canImport(Translation)
+import Translation
 #endif
 
-/// On-device ML translation wrapper.
+/// On-device translation wrapper.
 ///
-/// NOTE: Apple provides an on-device Translate framework on supported OS versions.
-/// This implementation is a guarded stub that can be extended to call the
-/// real Apple Translate APIs when available. Keeping the API here allows the
-/// HybridTranslationService to prefer on-device translation without causing
-/// unconditional compile or runtime failures on older OS versions.
+/// Uses Apple’s `Translation` framework when available.
+///
+/// Note: Programmatic `TranslationSession(installedSource:target:)` is only available on
+/// iOS 26.0+, so on-device translation is a best-effort feature gated by OS version.
 @available(iOS 16.0, *)
 actor MLTranslationService {
     static let shared = MLTranslationService()
@@ -21,31 +20,61 @@ actor MLTranslationService {
     /// produce an on-device translation and callers should fall back to HTTP-based
     /// translation or the original text.
     func translate(_ text: String, to languageCode: String) async -> String? {
-        // If the Translate framework is available, we would call into it here.
-        // This is intentionally conservative — add a concrete implementation when
-        // targeting an iOS version where the Translate API surface is stable.
-        if #available(iOS 16.0, *) {
-            if NSClassFromString("Translate.Translator") != nil {
-                // TODO: Implement actual Translator usage here.
-                print("ℹ️ MLTranslationService: Translate framework present but not wired up yet.")
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return text }
+
+#if canImport(Translation)
+        if #available(iOS 26.0, *) {
+            let source = Locale.Language(identifier: "en")
+            let target = Locale.Language(identifier: languageCode)
+            let session = TranslationSession(installedSource: source, target: target)
+
+            if session.canRequestDownloads {
+                try? await session.prepareTranslation()
+            }
+
+            do {
+                let response = try await session.translate(text)
+                return response.targetText
+            } catch {
+                print("⚠️ MLTranslationService.translate failed: \(error)")
                 return nil
             }
         }
+#endif
 
-        // Default: no on-device translation available
-        print("ℹ️ MLTranslationService.translate called, no on-device model configured. Returning nil.")
         return nil
     }
 
     /// Attempt to translate a batch of strings.
     func translateBatch(_ texts: [String], to languageCode: String) async -> [String] {
-        // By default, return originals. Replace with on-device batch calls when implemented.
-        print("ℹ️ MLTranslationService.translateBatch called, no on-device model configured. Returning originals.")
+        guard !texts.isEmpty else { return [] }
+
+#if canImport(Translation)
+        if #available(iOS 26.0, *) {
+            let source = Locale.Language(identifier: "en")
+            let target = Locale.Language(identifier: languageCode)
+            let session = TranslationSession(installedSource: source, target: target)
+
+            if session.canRequestDownloads {
+                try? await session.prepareTranslation()
+            }
+
+            let requests = texts.map { TranslationSession.Request(sourceText: $0) }
+            do {
+                let responses = try await session.translations(from: requests)
+                return responses.map { $0.targetText }
+            } catch {
+                print("⚠️ MLTranslationService.translateBatch failed: \(error)")
+                return texts
+            }
+        }
+#endif
+
         return texts
     }
 
     /// Clear any internal caches (no-op for the stub implementation).
     func clearCache() {
-        print("ℹ️ MLTranslationService.clearCache called (no-op for stub implementation).")
+        // No persistent on-device session is retained in this implementation.
     }
 }

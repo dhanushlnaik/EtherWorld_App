@@ -13,12 +13,12 @@ struct ArticleDetailView: View {
     @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
     private var excerptWords: [String] {
-        article.displayExcerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        detailVM.article.displayExcerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
     }
     
     private var displayedExcerpt: String {
         if isExcerptExpanded || excerptWords.count <= 30 {
-            return article.displayExcerpt
+            return detailVM.article.displayExcerpt
         } else {
             return excerptWords.prefix(30).joined(separator: " ") + "..."
         }
@@ -33,7 +33,7 @@ struct ArticleDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 // Hero Image
-                if let imageURL = article.imageURL {
+                if let imageURL = detailVM.article.imageURL {
                     CachedAsyncImage(url: imageURL) { image in
                         image
                             .resizable()
@@ -62,7 +62,7 @@ struct ArticleDetailView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(article.displayTitle)
+                    Text(detailVM.article.displayTitle)
                         .font(.title)
                         .bold()
                         .accessibilityAddTraits(.isHeader)
@@ -88,10 +88,10 @@ struct ArticleDetailView: View {
                         }
                         
                         HStack(spacing: 12) {
-                            if let author = article.author, let authorSlug = article.authorSlug {
+                            if let author = detailVM.article.author, let authorSlug = detailVM.article.authorSlug {
                                 NavigationLink(destination: AuthorProfileView(authorSlug: authorSlug)) {
                                     HStack(spacing: 8) {
-                                        if let profileImage = article.authorProfileImage {
+                                        if let profileImage = detailVM.article.authorProfileImage {
                                             CachedAsyncImage(url: profileImage) { image in
                                                 image
                                                     .resizable()
@@ -114,14 +114,14 @@ struct ArticleDetailView: View {
                                                 .font(.subheadline)
                                                 .foregroundColor(.blue)
                                                 .bold()
-                                            Text(article.publishedAt.formatted(date: .abbreviated, time: .omitted))
+                                            Text(detailVM.article.publishedAt, format: Date.FormatStyle(date: .abbreviated, time: .omitted))
                                                 .font(.caption)
                                                 .foregroundColor(.gray)
                                         }
                                     }
                                 }
                                 .buttonStyle(.plain)
-                            } else if let author = article.author {
+                            } else if let author = detailVM.article.author {
                                 HStack(spacing: 8) {
                                     Circle()
                                         .fill(Color.gray.opacity(0.2))
@@ -130,7 +130,7 @@ struct ArticleDetailView: View {
                                         Text(author)
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
-                                        Text(article.publishedAt.formatted(date: .abbreviated, time: .omitted))
+                                        Text(detailVM.article.publishedAt, format: Date.FormatStyle(date: .abbreviated, time: .omitted))
                                             .font(.caption)
                                             .foregroundColor(.gray)
                                     }
@@ -151,7 +151,7 @@ struct ArticleDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: 
                 HStack(spacing: 16) {
-                    ShareLink(item: URL(string: article.url) ?? URL(fileURLWithPath: ""), subject: Text(article.displayTitle), message: Text(article.displayExcerpt)) {
+                    ShareLink(item: URL(string: detailVM.article.url) ?? URL(fileURLWithPath: ""), subject: Text(detailVM.article.displayTitle), message: Text(detailVM.article.displayExcerpt)) {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundColor(.blue)
                     }
@@ -160,7 +160,7 @@ struct ArticleDetailView: View {
                     
                     Button(action: {
                         isSaved.toggle()
-                        viewModel.toggleSaved(article: article)
+                        viewModel.toggleSaved(article: detailVM.article)
                         HapticFeedback.medium()
                     }) {
                         Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
@@ -171,11 +171,11 @@ struct ArticleDetailView: View {
                 }
             )
             .onAppear {
-                isSaved = article.isSaved
-                isRead = article.isRead
+                isSaved = detailVM.article.isSaved
+                isRead = detailVM.article.isRead
                 // Mark as read when user opens the article
-                self.viewModel.markAsRead(article: article)
-                AnalyticsManager.shared.log(.articleOpen, params: ["id": article.id])
+                self.viewModel.markAsRead(article: detailVM.article)
+                AnalyticsManager.shared.log(.articleOpen, params: ["id": detailVM.article.id])
             }
             .task {
                 await detailVM.loadContentIfNeeded(service: viewModel.articleService)
@@ -204,6 +204,48 @@ struct DynamicHTMLContentView: View {
 struct WebViewContainer: UIViewRepresentable {
     let html: String
     @Binding var contentHeight: CGFloat
+
+    private func sanitizeVisiblePercentSpaces(in html: String) -> String {
+        // Replace percent-encoded spaces that leaked into rendered text ("%20" or "% 20")
+        // but avoid changing anything inside tags/attributes to keep URLs intact.
+        var output = ""
+        output.reserveCapacity(html.count)
+
+        var inTag = false
+        var textBuffer = ""
+        textBuffer.reserveCapacity(min(html.count, 1024))
+
+        func flushText() {
+            guard !textBuffer.isEmpty else { return }
+            var cleaned = textBuffer
+            if let regex = try? NSRegularExpression(pattern: "%\\s?20") {
+                let range = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
+                cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: " ")
+            }
+            output.append(cleaned)
+            textBuffer.removeAll(keepingCapacity: true)
+        }
+
+        for ch in html {
+            if ch == "<" {
+                flushText()
+                inTag = true
+                output.append(ch)
+            } else if ch == ">" {
+                inTag = false
+                output.append(ch)
+            } else {
+                if inTag {
+                    output.append(ch)
+                } else {
+                    textBuffer.append(ch)
+                }
+            }
+        }
+        flushText()
+
+        return output
+    }
     
     func makeUIView(context: Context) -> WKWebView {
         let contentController = WKUserContentController()
@@ -218,7 +260,26 @@ struct WebViewContainer: UIViewRepresentable {
         webView.backgroundColor = .clear
         webView.navigationDelegate = context.coordinator
         
-        let htmlString = """
+        let safeBodyHTML = sanitizeVisiblePercentSpaces(in: html)
+        context.coordinator.lastLoadedBodyHTML = safeBodyHTML
+        let htmlString = wrapHTMLDocument(bodyHTML: safeBodyHTML)
+        webView.loadHTMLString(htmlString, baseURL: nil)
+        
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // When translation completes, the SwiftUI `html` changes. We must reload
+        // the web view, otherwise it will keep showing the initial (English) HTML.
+        let safeBodyHTML = sanitizeVisiblePercentSpaces(in: html)
+        guard safeBodyHTML != context.coordinator.lastLoadedBodyHTML else { return }
+        context.coordinator.lastLoadedBodyHTML = safeBodyHTML
+        let htmlString = wrapHTMLDocument(bodyHTML: safeBodyHTML)
+        uiView.loadHTMLString(htmlString, baseURL: nil)
+    }
+
+    private func wrapHTMLDocument(bodyHTML: String) -> String {
+        """
         <html>
         <head>
             <meta charset=\"UTF-8\">
@@ -252,15 +313,10 @@ struct WebViewContainer: UIViewRepresentable {
                 });
             </script>
         </head>
-        <body>\(html)</body>
+        <body>\(bodyHTML)</body>
         </html>
         """
-        webView.loadHTMLString(htmlString, baseURL: nil)
-        
-        return webView
     }
-    
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(contentHeight: $contentHeight)
@@ -268,6 +324,7 @@ struct WebViewContainer: UIViewRepresentable {
     
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         @Binding var contentHeight: CGFloat
+        var lastLoadedBodyHTML: String = ""
         
         init(contentHeight: Binding<CGFloat>) {
             _contentHeight = contentHeight
@@ -304,6 +361,46 @@ struct WebViewContainer: UIViewRepresentable {
 
 struct HTMLContentView: UIViewRepresentable {
     let html: String
+
+    private func sanitizeVisiblePercentSpaces(in html: String) -> String {
+        var output = ""
+        output.reserveCapacity(html.count)
+
+        var inTag = false
+        var textBuffer = ""
+        textBuffer.reserveCapacity(min(html.count, 1024))
+
+        func flushText() {
+            guard !textBuffer.isEmpty else { return }
+            var cleaned = textBuffer
+            if let regex = try? NSRegularExpression(pattern: "%\\s?20") {
+                let range = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
+                cleaned = regex.stringByReplacingMatches(in: cleaned, options: [], range: range, withTemplate: " ")
+            }
+            output.append(cleaned)
+            textBuffer.removeAll(keepingCapacity: true)
+        }
+
+        for ch in html {
+            if ch == "<" {
+                flushText()
+                inTag = true
+                output.append(ch)
+            } else if ch == ">" {
+                inTag = false
+                output.append(ch)
+            } else {
+                if inTag {
+                    output.append(ch)
+                } else {
+                    textBuffer.append(ch)
+                }
+            }
+        }
+        flushText()
+
+        return output
+    }
     
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -312,6 +409,7 @@ struct HTMLContentView: UIViewRepresentable {
         webView.isOpaque = false
         webView.backgroundColor = .clear
         
+        let safeBodyHTML = sanitizeVisiblePercentSpaces(in: html)
         let htmlString = """
         <html>
         <head>
@@ -338,7 +436,7 @@ struct HTMLContentView: UIViewRepresentable {
                 });
             </script>
         </head>
-        <body>\(html)</body>
+        <body>\(safeBodyHTML)</body>
         </html>
         """
         webView.loadHTMLString(htmlString, baseURL: nil)

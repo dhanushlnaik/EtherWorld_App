@@ -3,19 +3,15 @@ import Foundation
 /// Hybrid translation service combining multiple strategies:
 /// 1. Local cache (TranslationCacheService) - instant, no API calls
 /// 2. External API (HTTPTranslationService via MyMemory) - high quality, requires internet
-/// 3. On-device ML (MLTranslationService iOS 16+) - offline, lower quality
+/// 3. On-device (MLTranslationService iOS 26+) - offline, requires downloaded language packs
 /// 4. Original text - last resort fallback
 class HybridTranslationService: TranslationService {
     static let shared = HybridTranslationService()
     
     private let cacheService = TranslationCacheService.shared
     private let httpService: HTTPTranslationService
-    private let mlService: MLTranslationService? = {
-        if #available(iOS 16.0, *) {
-            return MLTranslationService.shared
-        }
-        return nil
-    }()
+    @available(iOS 16.0, *)
+    private let mlService = MLTranslationService.shared
     
     init() {
         // Initialize HTTP service with MyMemory endpoint
@@ -53,12 +49,10 @@ class HybridTranslationService: TranslationService {
         }
 
         // Fallback to ML translation
-        if let mlService = mlService {
-            if #available(iOS 16.0, *) {
-                if let translated = await mlService.translate(text, to: targetLang) {
-                    print("✅ ML translation fallback successful")
-                    return translated
-                }
+        if #available(iOS 26.0, *) {
+            if let translated = await mlService.translate(text, to: targetLang) {
+                print("✅ ML translation fallback successful")
+                return translated
             }
         }
 
@@ -78,10 +72,8 @@ class HybridTranslationService: TranslationService {
         }
 
         // Fallback: translate individually through ML
-        if let mlService = mlService {
-            if #available(iOS 16.0, *) {
-                return await mlService.translateBatch(texts, to: targetLang)
-            }
+        if #available(iOS 26.0, *) {
+            return await mlService.translateBatch(texts, to: targetLang)
         }
 
         // Final fallback: return originals
@@ -102,11 +94,9 @@ class HybridTranslationService: TranslationService {
     /// Clear all caches
     func clearCache() {
         httpService.clearCache()
-        if let mlService = mlService {
-            if #available(iOS 16.0, *) {
-                Task {
-                    await mlService.clearCache()
-                }
+        if #available(iOS 26.0, *) {
+            Task {
+                await mlService.clearCache()
             }
         }
         print("🗑️ Cleared all hybrid translation caches")

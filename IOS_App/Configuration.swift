@@ -44,11 +44,13 @@ extension Configuration {
     }
 
     static var supabaseURL: String {
-        return (try? value(for: "SupabaseURL")) ?? "https://enlobybupevetrtfzomu.supabase.co"
+        // Intentionally no in-code default. Provide via Info.plist/build settings.
+        return (try? value(for: "SupabaseURL")) ?? ""
     }
 
     static var supabaseAnonKey: String {
-        return (try? value(for: "SupabaseAnonKey")) ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVubG9ieWJ1cGV2ZXRydGZ6b211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NzI3NDUsImV4cCI6MjA4NDA0ODc0NX0.5lZCR_WygSfcdS3TjZcQcqiETtorvK6ZWLpbT4O_zAA"
+        // Intentionally no in-code default. Provide via Info.plist/build settings.
+        return (try? value(for: "SupabaseAnonKey")) ?? ""
     }
 
     static var translationAPIURL: String {

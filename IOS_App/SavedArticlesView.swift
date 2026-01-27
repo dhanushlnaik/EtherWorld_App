@@ -41,11 +41,11 @@ struct SavedArticlesView: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text(article.title)
+                                    Text(article.displayTitle)
                                         .font(.headline)
                                         .lineLimit(2)
                                     
-                                    Text(article.excerpt)
+                                    Text(article.displayExcerpt)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                         .lineLimit(2)
