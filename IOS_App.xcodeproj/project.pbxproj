@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9598FF2F0B6C40007FF60C /* Localizable.strings */; };
 		FEFA00012FABCDEF00000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10012FABCDEF00000001 /* FirebaseAuth */; };
 		FEFA00022FABCDEF00000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10022FABCDEF00000002 /* FirebaseCore */; };
-		FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9598FF2F0B6C40007FF60C /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +81,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FE2A57902F2B7B24007A7EBC /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				FE9598FF2F0B6C40007FF60C /* Localizable.strings */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		FE9596F02F0B6C3F007FF60C = {
 			isa = PBXGroup;
 			children = (
@@ -88,6 +96,7 @@
 				FE95970B2F0B6C40007FF60C /* IOS_AppTests */,
 				FE9597152F0B6C40007FF60C /* IOS_AppUITests */,
 				FE9596FA2F0B6C3F007FF60C /* Products */,
+				FE2A57902F2B7B24007A7EBC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
