@@ -81,7 +81,6 @@ struct IOS_AppApp: App {
     @StateObject private var authManager = AuthenticationManager()
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
     @AppStorage("darkModeEnabled") private var legacyDarkModeEnabled: Bool = false
-    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
 
     private var resolvedTheme: AppTheme {
         AppTheme(rawValue: appThemeRaw) ?? AppTheme.fromUserDefaults()
@@ -106,13 +105,11 @@ struct IOS_AppApp: App {
                 if authManager.isAuthenticated {
                     AdaptiveContentView()
                         .environmentObject(authManager)
-                        .environment(\.locale, Locale(identifier: appLanguageCode))
-                        .id(appLanguageCode)
+                        .environment(\.locale, Locale(identifier: "en"))
                 } else {
                     LoginView()
                         .environmentObject(authManager)
-                        .environment(\.locale, Locale(identifier: appLanguageCode))
-                        .id(appLanguageCode)
+                        .environment(\.locale, Locale(identifier: "en"))
                 }
             }
             // Force full view swap when auth state changes so login screen appears immediately after sign-out

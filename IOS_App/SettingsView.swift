@@ -14,8 +14,6 @@ struct SettingsView: View {
     @State private var showingLogoutConfirmation = false
     @Environment(\.dismiss) private var dismiss
 
-    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
-
     private var themeBinding: Binding<AppTheme> {
         Binding(
             get: { AppTheme(rawValue: appThemeRaw) ?? .system },
@@ -34,7 +32,7 @@ struct SettingsView: View {
             appTheme: appThemeRaw,
             analyticsEnabled: analyticsEnabled,
             newsletterOptIn: newsletterOptIn,
-            appLanguage: appLanguageCode,
+            appLanguage: "en",
             lastUpdated: Date()
         )
         Task {
