@@ -289,12 +289,14 @@ struct WebViewContainer: UIViewRepresentable {
                     line-height: 1.6; 
                     margin: 0; 
                     padding: 10px; 
-                    color: #333; 
+                    color: #e0e0e0; 
                 }
                 img { max-width: 100%; height: auto; margin: 10px 0; }
-                a { color: #007AFF; }
-                h1, h2, h3 { color: #000; margin-top: 16px; }
+                a { color: #64B5F6; }
+                h1, h2, h3 { color: #ffffff; margin-top: 16px; }
                 p { margin: 10px 0; }
+                strong { color: #f0f0f0; }
+                em { color: #e0e0e0; }
             </style>
             <script>
                 function sendHeight() {
