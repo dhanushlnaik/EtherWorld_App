@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		FEFA00012FABCDEF00000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10012FABCDEF00000001 /* FirebaseAuth */; };
 		FEFA00022FABCDEF00000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10022FABCDEF00000002 /* FirebaseCore */; };
+		FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9598FF2F0B6C40007FF60C /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +33,7 @@
 		FE9596F92F0B6C3F007FF60C /* IOS_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = IOS_App.app; path = EtherWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppTests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppUITests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9598FF2F0B6C40007FF60C /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = IOS_App/en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -216,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
