@@ -14,9 +14,4 @@ struct ServiceFactory {
             return GhostArticleService()
         }
     }
-
-    nonisolated static func makeTranslationService() -> TranslationService {
-        // Use hybrid translation: local cache → HTTP API → ML translation
-        return HybridTranslationService.shared
-    }
 }

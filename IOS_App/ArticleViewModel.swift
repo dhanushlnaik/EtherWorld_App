@@ -10,7 +10,6 @@ final class ArticleViewModel: ObservableObject {
     @Published private(set) var hasMoreArticles: Bool = true
     @Published var errorMessage: String?
     @Published private(set) var lastUpdated: Date?
-    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
     private let service: ArticleService
     private let paginatedService: PaginatedArticleService?
@@ -20,7 +19,6 @@ final class ArticleViewModel: ObservableObject {
     private let lastUpdatedKey = "lastArticlesUpdate"
     private var currentPage: Int = 1
     private let pageSize: Int = 50
-    private var languageObserver: AnyCancellable?
     
     private let cacheURL: URL = {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
@@ -46,7 +44,6 @@ final class ArticleViewModel: ObservableObject {
         loadSavedState()
         loadReadState()
         loadLastUpdated()
-        setupLanguageObserver()
         setupSearch()
     }
     
@@ -341,43 +338,7 @@ final class ArticleViewModel: ObservableObject {
         guard let lastUpdated = lastUpdated else { return "" }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
-        // Use app language if available so the result matches the selected language
-        let lang = UserDefaults.standard.string(forKey: "appLanguage")
-        if let lang = lang {
-            formatter.locale = Locale(identifier: lang)
-        }
         return formatter.localizedString(for: lastUpdated, relativeTo: Date())
-    }
-    
-    private func setupLanguageObserver() {
-        // Observe UserDefaults changes for app language
-        languageObserver = NotificationCenter.default
-            .publisher(for: UserDefaults.didChangeNotification)
-            .compactMap { _ in UserDefaults.standard.string(forKey: "appLanguage") }
-            .removeDuplicates()
-            .dropFirst() // Skip initial value
-            .sink { [weak self] newLanguage in
-                Task { @MainActor [weak self] in
-                    print("🌍 Language changed to \(newLanguage), clearing translation caches and reloading articles...")
-
-                    // Clear translation caches (Hybrid + per-article cache) so we don't
-                    // keep serving stale English text when the API was rate-limited.
-                    let translationService = ServiceFactory.makeTranslationService()
-                    translationService.clearCache()
-                    Task {
-                        await TranslationCacheService.shared.clearAllTranslations()
-                    }
-
-                    // Clear HTTP cache to force fresh network requests
-                    URLCache.shared.removeAllCachedResponses()
-                    
-                    // Clear articles array so view refreshes
-                    self?.articles = []
-                    
-                    // Reload articles with new language
-                    await self?.load()
-                }
-            }
     }
 }
 

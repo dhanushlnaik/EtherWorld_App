@@ -52,12 +52,4 @@ extension Configuration {
         // Intentionally no in-code default. Provide via Info.plist/build settings.
         return (try? value(for: "SupabaseAnonKey")) ?? ""
     }
-
-    static var translationAPIURL: String {
-        return (try? value(for: "TranslationAPIURL")) ?? "https://api.mymemory.translated.net/get"
-    }
-
-    static var translationAPIKey: String {
-        return (try? value(for: "TranslationAPIKey")) ?? ""
-    }
 }

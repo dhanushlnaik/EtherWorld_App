@@ -9,8 +9,6 @@ struct ArticleDetailView: View {
     @State private var isRead: Bool = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isExcerptExpanded: Bool = false
-    @State private var showingTranslationOptions: Bool = false
-    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     
     private var excerptWords: [String] {
         detailVM.article.displayExcerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }

@@ -162,7 +162,6 @@ struct SettingsSectionsView: View {
     @AppStorage("quietStartHour") private var quietStartHour: Int = 23
     @AppStorage("quietEndHour") private var quietEndHour: Int = 7
     @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
-    @AppStorage("appLanguage") private var appLanguageCode: String = Locale.current.language.languageCode?.identifier ?? "en"
     @AppStorage("analyticsEnabled") private var analyticsEnabled = false
     @AppStorage("newsletterOptIn") private var newsletterOptIn = false
     @EnvironmentObject var viewModel: ArticleViewModel
@@ -245,40 +244,6 @@ struct SettingsSectionsView: View {
             Text(LocalizedStringKey("settings.appearance.section"))
         }
         
-        // Language Section
-        Section {
-            HStack(spacing: 12) {
-                Image(systemName: "globe")
-                    .foregroundStyle(.blue)
-                    .frame(width: 28)
-                    .font(.system(size: 16))
-                    VStack(alignment: .leading, spacing: 4) {
-                    Text(LocalizedStringKey("settings.language.title"))
-                        .fontWeight(.medium)
-                    Text(LocalizedStringKey("settings.language.subtitle"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Picker(LocalizedStringKey("settings.language.title"), selection: $appLanguageCode) {
-                    Text(LocalizedStringKey("language.english")).tag("en")
-                    Text(LocalizedStringKey("language.hindi")).tag("hi")
-                    Text(LocalizedStringKey("language.spanish")).tag("es")
-                    Text(LocalizedStringKey("language.french")).tag("fr")
-                    Text(LocalizedStringKey("language.german")).tag("de")
-                    Text(LocalizedStringKey("language.portuguese")).tag("pt")
-                    Text(LocalizedStringKey("language.mandarin")).tag("zh")
-                }
-                .pickerStyle(.menu)
-            }
-            .padding(.vertical, 4)
-            .onChange(of: appLanguageCode) { _, _ in
-                HapticFeedback.light()
-            }
-        } header: {
-            Text(LocalizedStringKey("settings.language.section"))
-        }
-        
         // Newsletter
         Section {
             Toggle(isOn: $newsletterOptIn) {
@@ -335,9 +300,6 @@ struct SettingsSectionsView: View {
         // Offline & Storage
         OfflineControlsSection()
         
-        // Translation Cache Stats
-        TranslationCacheStatsSection()
-        
         // About
         Section {
             HStack {
@@ -356,59 +318,6 @@ struct SettingsSectionsView: View {
         
         .sheet(isPresented: $showingPrivacyPolicy) {
             PrivacyPolicyView()
-        }
-    }
-}
-
-struct TranslationCacheStatsSection: View {
-    @State private var stats: (articleCount: Int, totalEntries: Int, approximateSizeKB: Int) = (0, 0, 0)
-    
-    var body: some View {
-        Section {
-            HStack {
-                Label(LocalizedStringKey("settings.cache.articles"), systemImage: "doc.text.fill")
-                Spacer()
-                Text("\(stats.articleCount)")
-                    .foregroundStyle(.secondary)
-            }
-            
-            HStack {
-                Label(LocalizedStringKey("settings.cache.translations"), systemImage: "globe.badge.chevron.backward")
-                Spacer()
-                Text("\(stats.totalEntries)")
-                    .foregroundStyle(.secondary)
-            }
-            
-            HStack {
-                Label(LocalizedStringKey("settings.cache.size"), systemImage: "internaldrive.fill")
-                Spacer()
-                Text("\(stats.approximateSizeKB) KB")
-                    .foregroundStyle(.secondary)
-            }
-            
-            Button(role: .destructive) {
-                Task {
-                    await TranslationCacheService.shared.clearAllTranslations()
-                    updateStats()
-                    HapticFeedback.light()
-                }
-            } label: {
-                Label(LocalizedStringKey("settings.cache.clear"), systemImage: "trash.fill")
-            }
-            .foregroundStyle(.red)
-        } header: {
-            Text(LocalizedStringKey("settings.cache.section"))
-        } footer: {
-            Text(LocalizedStringKey("settings.cache.description"))
-        }
-        .onAppear {
-            updateStats()
-        }
-    }
-    
-    private func updateStats() {
-        Task {
-            stats = await TranslationCacheService.shared.getCacheStats()
         }
     }
 }
