@@ -10,3 +10,6 @@ GHOST_BASE_URL = https://etherworld.co
 // Intentionally blank defaults (provide via Secrets.xcconfig, CI, or per-user build settings)
 SUPABASE_URL =
 SUPABASE_ANON_KEY =
+
+// OTP backend base URL (recommended: https://<your-backend>.railway.app)
+OTP_BACKEND_BASE_URL =
