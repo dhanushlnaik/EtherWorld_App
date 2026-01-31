@@ -9,6 +9,8 @@ const path = require('path');
 // works whether started in ./backend or from the repo root.
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
+console.log('🚀 Booting EtherWorld OTP Backend...');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -19,11 +21,13 @@ app.use(express.json());
 // Storage: prefer Redis if configured, otherwise fall back to in-memory Map (hashed values)
 let redisClient = null;
 const useRedis = !!process.env.REDIS_URL || !!process.env.REDIS_HOST;
+console.log('🧰 Config:', { port: PORT, host: process.env.HOST || '0.0.0.0', useRedis });
 if (useRedis) {
   const redisOpts = process.env.REDIS_URL ? { url: process.env.REDIS_URL } : {
     socket: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379 },
     password: process.env.REDIS_PASSWORD || undefined
   };
+  console.log('🧠 Initializing Redis client...');
   redisClient = createClient(redisOpts);
   redisClient.on('error', (err) => console.error('Redis error', err));
   redisClient.connect().then(() => console.log('✅ Connected to Redis')).catch(err => console.error('Redis connect failed', err));
@@ -94,6 +98,7 @@ function initEmailTransporter() {
 }
 
 initEmailTransporter();
+console.log('📨 Email transporter initialized');
 
 // Generate secure 6-digit OTP
 function generateOTP() {

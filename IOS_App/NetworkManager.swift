@@ -6,7 +6,39 @@ final class NetworkManager {
     static let shared = NetworkManager()
     private init() {}
     
-    private let baseURL = "http://localhost:3000"
+    private var baseURLString: String {
+        // Prefer a configured backend URL (e.g. https://your-app.railway.app)
+        if let configured: String = try? Configuration.value(for: "OTPBackendBaseURL") {
+            let trimmed = configured.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+
+        #if DEBUG
+        #if targetEnvironment(simulator)
+        // Local development default (simulator -> Mac localhost)
+        return "http://localhost:3000"
+        #else
+        // On a physical device, "localhost" points to the phone (no server).
+        return ""
+        #endif
+        #else
+        // In production we require a real HTTPS backend.
+        return ""
+        #endif
+    }
+
+    private func makeURL(path: String) throws -> URL {
+        let base = baseURLString
+        guard !base.isEmpty else {
+            throw NetworkError.notConfigured
+        }
+        guard let url = URL(string: "\(base)\(path)") else {
+            throw NetworkError.invalidURL
+        }
+        return url
+    }
 
     private func makeDecoder() -> JSONDecoder {
         let decoder = JSONDecoder()
@@ -15,6 +47,7 @@ final class NetworkManager {
     }
     
     enum NetworkError: Error {
+        case notConfigured
         case invalidURL
         case invalidResponse
         case unauthorized
@@ -24,9 +57,7 @@ final class NetworkManager {
     // MARK: - OTP Authentication
     
     func sendOTP(email: String) async throws -> Bool {
-        guard let url = URL(string: "\(baseURL)/auth/send-otp") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/auth/send-otp")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -52,9 +83,7 @@ final class NetworkManager {
     }
     
     func verifyOTP(email: String, code: String) async throws -> AuthResponse {
-        guard let url = URL(string: "\(baseURL)/auth/verify-otp") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/auth/verify-otp")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -81,9 +110,7 @@ final class NetworkManager {
     // MARK: - Token Management
     
     func refreshToken(_ token: String) async throws -> AuthResponse {
-        guard let url = URL(string: "\(baseURL)/auth/refresh") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/auth/refresh")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -105,9 +132,7 @@ final class NetworkManager {
     // MARK: - Session Management
     
     func getSessions(token: String) async throws -> [SessionData] {
-        guard let url = URL(string: "\(baseURL)/auth/sessions") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/auth/sessions")
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -125,9 +150,7 @@ final class NetworkManager {
     }
     
     func revokeSession(sessionId: String, token: String) async throws {
-        guard let url = URL(string: "\(baseURL)/auth/sessions/\(sessionId)") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/auth/sessions/\(sessionId)")
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
@@ -144,9 +167,7 @@ final class NetworkManager {
     // MARK: - Newsletter Subscription
     
     func subscribeNewsletter(email: String) async throws {
-        guard let url = URL(string: "\(baseURL)/newsletter/subscribe") else {
-            throw NetworkError.invalidURL
-        }
+        let url = try makeURL(path: "/newsletter/subscribe")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
