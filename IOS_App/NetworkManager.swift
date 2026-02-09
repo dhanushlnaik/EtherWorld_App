@@ -14,19 +14,8 @@ final class NetworkManager {
                 return trimmed
             }
         }
-
-        #if DEBUG
-        #if targetEnvironment(simulator)
-        // Local development default (simulator -> Mac localhost)
-        return "http://localhost:3000"
-        #else
-        // On a physical device, "localhost" points to the phone (no server).
-        return ""
-        #endif
-        #else
-        // In production we require a real HTTPS backend.
-        return ""
-        #endif
+        // Default to Railway production backend URL (same service as main app)
+        return "https://etherworldapp-production.up.railway.app"
     }
 
     private func makeURL(path: String) throws -> URL {
