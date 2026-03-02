@@ -1,0 +1,49 @@
+# Firebase Configuration - SECRETS
+GoogleService-Info.plist
+GoogleService-Info*.plist
+
+# App Configuration - CONTAINS API KEYS
+Config.xcconfig
+IOS-App-Info.plist
+
+# Build & Xcode
+build/
+DerivedData/
+*.xcarchive
+*.app/
+*.ipa
+
+# Xcode User Data
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.swiftpm/xcode/package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
