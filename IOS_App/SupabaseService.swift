@@ -56,6 +56,22 @@ final class SupabaseService {
         let appLanguage: String
         let lastUpdated: Date
     }
+
+    struct NewsletterSubscriber: Encodable {
+        let email: String
+        let name: String?
+        let subscribed: Bool
+        let authMethod: String // "email", "apple", "google"
+        let subscribedAt: Date = Date()
+        
+        enum CodingKeys: String, CodingKey {
+            case email
+            case name
+            case subscribed
+            case authMethod = "auth_method"
+            case subscribedAt = "subscribed_at"
+        }
+    }
     
     func logEmail(email: String, name: String?) async {
         guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else { return }
@@ -95,5 +111,29 @@ final class SupabaseService {
         request.httpBody = try? encoder.encode([prefs])
 
         _ = try? await URLSession.shared.data(for: request)
+    }
+
+    func logNewsletterPreference(email: String, name: String?, subscribed: Bool, authMethod: String) async {
+        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else { return }
+        let endpoint = baseURL.appendingPathComponent("rest/v1/newsletter_subscribers")
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("upsert", forHTTPHeaderField: "Prefer")
+        request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
+
+        let payload = [NewsletterSubscriber(email: email.lowercased(), name: name, subscribed: subscribed, authMethod: authMethod)]
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        request.httpBody = try? encoder.encode(payload)
+
+        do {
+            _ = try await URLSession.shared.data(for: request)
+            print("✅ Newsletter preference logged for \(email)")
+        } catch {
+            print("⚠️ Failed to log newsletter preference: \(error.localizedDescription)")
+        }
     }
 }

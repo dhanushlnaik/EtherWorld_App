@@ -286,6 +286,17 @@ final class AuthenticationManager: ObservableObject {
             do {
                 let result = try await FirebaseAuth.Auth.auth().signIn(with: credential)
                 print("✅ Apple Sign-In successful via Firebase: \(result.user.email ?? "no email")")
+                
+                // Log email and name to Supabase
+                let email = result.user.email ?? ""
+                let name = appleIDCredential.fullName?.givenName ?? appleIDCredential.fullName?.familyName ?? nil
+                if !email.isEmpty {
+                    Task {
+                        await SupabaseService.shared.logEmail(email: email, name: name)
+                        print("✅ Logged Apple sign-in email to Supabase: \(email)")
+                    }
+                }
+                
                 // Firebase listener will handle the rest
             } catch {
                 await MainActor.run {
@@ -332,6 +343,17 @@ final class AuthenticationManager: ObservableObject {
                 isLoading = false
             }
             print("✅ Google Sign-In successful via Firebase: \(authResult.user.email ?? "no email")")
+            
+            // Log email to Supabase
+            let email = authResult.user.email ?? ""
+            let name = authResult.user.displayName
+            if !email.isEmpty {
+                Task {
+                    await SupabaseService.shared.logEmail(email: email, name: name)
+                    print("✅ Logged Google sign-in email to Supabase: \(email)")
+                }
+            }
+            
             // Firebase listener will handle the rest
 
         } catch let error as NSError {
@@ -447,5 +469,16 @@ final class AuthenticationManager: ObservableObject {
             String(format: "%02x", $0)
         }.joined()
         return hashString
+    }
+
+    func logNewsletterPreference(email: String, name: String?, subscribed: Bool, authMethod: String) {
+        Task {
+            await SupabaseService.shared.logNewsletterPreference(
+                email: email,
+                name: name,
+                subscribed: subscribed,
+                authMethod: authMethod
+            )
+        }
     }
 }

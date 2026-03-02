@@ -68,6 +68,18 @@ struct LoginView: View {
                             switch result {
                             case .success(let authorization):
                                 authManager.signInWithApple(authorization: authorization)
+                                // Log newsletter preference
+                                let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential
+                                let email = appleIDCredential?.email ?? ""
+                                let name = appleIDCredential?.fullName?.givenName ?? appleIDCredential?.fullName?.familyName
+                                if !email.isEmpty {
+                                    authManager.logNewsletterPreference(
+                                        email: email,
+                                        name: name,
+                                        subscribed: newsletterOptIn,
+                                        authMethod: "apple"
+                                    )
+                                }
                                 showSuccess()
                             case .failure(let error):
                                 authManager.errorMessage = error.localizedDescription
@@ -82,6 +94,15 @@ struct LoginView: View {
                     Button {
                         Task {
                             await authManager.signInWithGoogle()
+                            // Log newsletter preference
+                            if let email = authManager.currentUser?.email, !email.isEmpty {
+                                authManager.logNewsletterPreference(
+                                    email: email,
+                                    name: authManager.currentUser?.name,
+                                    subscribed: newsletterOptIn,
+                                    authMethod: "google"
+                                )
+                            }
                         }
                     } label: {
                         HStack(spacing: 12) {
@@ -217,6 +238,13 @@ struct LoginView: View {
                                 // Verify OTP
                                 await authManager.verifyOTP(email: email, code: otp)
                                 if authManager.isAuthenticated {
+                                    // Log newsletter preference for email auth
+                                    authManager.logNewsletterPreference(
+                                        email: email,
+                                        name: nil,
+                                        subscribed: newsletterOptIn,
+                                        authMethod: "email"
+                                    )
                                     showSuccess()
                                 }
                             }
