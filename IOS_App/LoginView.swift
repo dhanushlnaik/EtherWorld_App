@@ -273,19 +273,21 @@ struct LoginView: View {
                 .padding(.horizontal, 32)
                 
                 Spacer()
-                
-                // Footer
-                VStack(spacing: 8) {
-                    Text(LocalizedStringKey("login.footer.text"))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Link(LocalizedStringKey("login.footer.link"), destination: URL(string: "https://etherworld.co/privacy")!)
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                }
-                .padding(.bottom, 32)
+                    .frame(minHeight: 20)
             }
+        }
+        .overlay(alignment: .bottom) {
+            // Footer - positioned outside main VStack for visibility
+            VStack(spacing: 8) {
+                Text(LocalizedStringKey("login.footer.text"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Link(LocalizedStringKey("login.footer.link"), destination: URL(string: "https://etherworld.co/privacy")!)
+                    .font(.caption)
+                    .foregroundColor(.blue)
+            }
+            .padding(.bottom, 32)
         }
         .overlay {
             if showingSuccess {
