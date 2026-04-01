@@ -15,23 +15,9 @@ struct ArticleRowView: View {
                         .clipped()
                         .cornerRadius(16)
                 } placeholder: {
-                    ZStack {
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.gray.opacity(0.1),
-                                        Color.gray.opacity(0.2),
-                                        Color.gray.opacity(0.1)
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        ProgressView()
-                    }
-                    .frame(height: 200)
-                    .cornerRadius(16)
+                    ShimmerPlaceholder()
+                        .frame(height: 200)
+                        .cornerRadius(16)
                 }
             }
             

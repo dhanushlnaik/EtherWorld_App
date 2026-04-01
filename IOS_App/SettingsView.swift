@@ -32,7 +32,6 @@ struct SettingsView: View {
             appTheme: appThemeRaw,
             analyticsEnabled: analyticsEnabled,
             newsletterOptIn: newsletterOptIn,
-            appLanguage: "en",
             lastUpdated: Date()
         )
         Task {

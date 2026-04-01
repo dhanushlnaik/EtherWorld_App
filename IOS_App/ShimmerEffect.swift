@@ -36,3 +36,12 @@ extension View {
         modifier(ShimmerEffect())
     }
 }
+
+/// A ready-made animated shimmer rectangle to drop in as an image placeholder.
+struct ShimmerPlaceholder: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.15))
+            .shimmer()
+    }
+}

@@ -29,7 +29,8 @@ struct LoginView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 32) {
                 Spacer()
                 
                 // Logo/Icon
@@ -67,19 +68,7 @@ struct LoginView: View {
                         onCompletion: { result in
                             switch result {
                             case .success(let authorization):
-                                authManager.signInWithApple(authorization: authorization)
-                                // Log newsletter preference
-                                let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential
-                                let email = appleIDCredential?.email ?? ""
-                                let name = appleIDCredential?.fullName?.givenName ?? appleIDCredential?.fullName?.familyName
-                                if !email.isEmpty {
-                                    authManager.logNewsletterPreference(
-                                        email: email,
-                                        name: name,
-                                        subscribed: newsletterOptIn,
-                                        authMethod: "apple"
-                                    )
-                                }
+                                authManager.signInWithApple(authorization: authorization, newsletterOptIn: newsletterOptIn)
                                 showSuccess()
                             case .failure(let error):
                                 authManager.errorMessage = error.localizedDescription
@@ -93,16 +82,7 @@ struct LoginView: View {
                     // Google Sign In (Placeholder)
                     Button {
                         Task {
-                            await authManager.signInWithGoogle()
-                            // Log newsletter preference
-                            if let email = authManager.currentUser?.email, !email.isEmpty {
-                                authManager.logNewsletterPreference(
-                                    email: email,
-                                    name: authManager.currentUser?.name,
-                                    subscribed: newsletterOptIn,
-                                    authMethod: "google"
-                                )
-                            }
+                            await authManager.signInWithGoogle(newsletterOptIn: newsletterOptIn)
                         }
                     } label: {
                         HStack(spacing: 12) {
@@ -203,18 +183,6 @@ struct LoginView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-
-                        Toggle(isOn: $newsletterOptIn) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(LocalizedStringKey("login.newsletter.title"))
-                                    .fontWeight(.semibold)
-                                Text(LocalizedStringKey("login.newsletter.subtitle"))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .toggleStyle(SwitchToggleStyle(tint: .blue))
-                        .padding(.top, 4)
                     }
                     
                     Button {
@@ -296,26 +264,44 @@ struct LoginView: View {
                         .background(Color.red.opacity(0.1))
                         .cornerRadius(8)
                     }
-                    
+
+                    // Newsletter toggle — always visible, clearly separated
+                    Divider()
+                        .padding(.vertical, 4)
+
+                    Toggle(isOn: $newsletterOptIn) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(LocalizedStringKey("login.newsletter.title"))
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text(LocalizedStringKey("login.newsletter.subtitle"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: .blue))
+
+                    // Footer inline — no overlay, never obscures content
+                    VStack(spacing: 4) {
+                        Text(LocalizedStringKey("login.footer.text"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Link(LocalizedStringKey("login.footer.link"), destination: URL(string: "https://etherworld.co/privacy")!)
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+
                 }
                 .padding(.horizontal, 32)
-                
-                Spacer()
-                    .frame(minHeight: 20)
-            }
-        }
-        .overlay(alignment: .bottom) {
-            // Footer - positioned outside main VStack for visibility
-            VStack(spacing: 8) {
-                Text(LocalizedStringKey("login.footer.text"))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Link(LocalizedStringKey("login.footer.link"), destination: URL(string: "https://etherworld.co/privacy")!)
-                    .font(.caption)
-                    .foregroundColor(.blue)
-            }
-            .padding(.bottom, 32)
+
+                    Spacer()
+                        .frame(minHeight: 20)
+                }
+            } // ScrollView
         }
         .overlay {
             if showingSuccess {

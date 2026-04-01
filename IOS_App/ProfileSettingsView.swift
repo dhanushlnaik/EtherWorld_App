@@ -5,6 +5,8 @@ struct ProfileSettingsView: View {
     @State private var showingLogoutConfirmation = false
     @State private var showingDeleteConfirmation = false
     @State private var showingExportSheet = false
+    @State private var showingLogin = false
+    @State private var showingReauthAlert = false
     
     var body: some View {
         NavigationStack {
@@ -58,45 +60,60 @@ struct ProfileSettingsView: View {
                     Text(LocalizedStringKey("profile.title"))
                 }
                 
-                // Account Management
-                Section {
-                    NavigationLink {
-                        SessionManagementView()
-                    } label: {
-                        Label(LocalizedStringKey("profile.activeSessions"), systemImage: "laptopcomputer.and.iphone")
+                if authManager.currentUser == nil {
+                    // Guest: prompt to sign in
+                    Section {
+                        Button {
+                            showingLogin = true
+                        } label: {
+                            Label("Sign In", systemImage: "person.fill")
+                        }
+                    } header: {
+                        Text("Account")
+                    } footer: {
+                        Text("Sign in to save articles, manage your account, and access personalised features.")
+                    }
+                } else {
+                    // Account Management
+                    Section {
+                        NavigationLink {
+                            SessionManagementView()
+                        } label: {
+                            Label(LocalizedStringKey("profile.activeSessions"), systemImage: "laptopcomputer.and.iphone")
+                        }
+                        
+                        Button {
+                            showingExportSheet = true
+                        } label: {
+                            Label(LocalizedStringKey("profile.exportData"), systemImage: "square.and.arrow.up")
+                        }
+                        .foregroundStyle(.primary)
+                    } header: {
+                        Text(LocalizedStringKey("account.accountManagement"))
                     }
                     
-                    Button {
-                        showingExportSheet = true
-                    } label: {
-                        Label(LocalizedStringKey("profile.exportData"), systemImage: "square.and.arrow.up")
+                    // Danger Zone
+                    Section {
+                        Button(role: .destructive) {
+                            showingLogoutConfirmation = true
+                        } label: {
+                            Label(LocalizedStringKey("profile.signOut"), systemImage: "rectangle.portrait.and.arrow.right")
+                        }
+                        
+                        Button(role: .destructive) {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label(LocalizedStringKey("profile.deleteAccount"), systemImage: "trash")
+                        }
+                    } header: {
+                        Text(LocalizedStringKey("profile.dangerZone"))
+                    } footer: {
+                        Text(LocalizedStringKey("profile.deleteWarning"))
                     }
-                    .foregroundStyle(.primary)
-                } header: {
-                    Text(LocalizedStringKey("account.accountManagement"))
                 }
                 
-                // Settings Sections
+                // Settings Sections (always visible)
                 SettingsSectionsView()
-                
-                // Danger Zone
-                Section {
-                    Button(role: .destructive) {
-                        showingLogoutConfirmation = true
-                    } label: {
-                        Label(LocalizedStringKey("profile.signOut"), systemImage: "rectangle.portrait.and.arrow.right")
-                    }
-                    
-                    Button(role: .destructive) {
-                        showingDeleteConfirmation = true
-                    } label: {
-                        Label(LocalizedStringKey("profile.deleteAccount"), systemImage: "trash")
-                    }
-                } header: {
-                    Text(LocalizedStringKey("profile.dangerZone"))
-                } footer: {
-                    Text(LocalizedStringKey("profile.deleteWarning"))
-                }
             }
             .navigationTitle(LocalizedStringKey("profile.title"))
             .navigationBarTitleDisplayMode(.large)
@@ -118,6 +135,10 @@ struct ProfileSettingsView: View {
             }
             .sheet(isPresented: $showingExportSheet) {
                 DataExportView()
+            }
+            .sheet(isPresented: $showingLogin) {
+                LoginView()
+                    .environmentObject(authManager)
             }
         }
     }

@@ -52,12 +52,13 @@ final class ArticleViewModel: ObservableObject {
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] query in
+                guard let self else { return }
                 if query.count >= 2 {
-                    Task { [weak self] in
+                    Task { @MainActor [weak self] in
                         await self?.performSearch(query: query)
                     }
                 } else {
-                    self?.searchResults = []
+                    self.searchResults = []
                 }
             }
     }
@@ -84,17 +85,6 @@ final class ArticleViewModel: ObservableObject {
         hasMoreArticles = true
         defer { isLoading = false }
 
-        // Quick connectivity check to provide clearer UX when offline
-        if !(await isOnline()) {
-            print("⚠️ No network connectivity detected")
-            if !self.articles.isEmpty {
-                self.errorMessage = "Using cached articles — no network connection"
-            } else {
-                self.errorMessage = "No network connection. Check your internet and try again."
-            }
-            return
-        }
-
         do {
             let result = try await service.fetchArticles()
             self.articles = result.map { article in
@@ -103,8 +93,6 @@ final class ArticleViewModel: ObservableObject {
                 return mutableArticle
             }
             saveCache(articles)
-            // Prefetch images for first screen to accelerate rendering
-            await prefetchImages(count: 10)
             self.errorMessage = nil
             saveLastUpdated()
             // Check if we got fewer than expected (means no more pages)
@@ -295,27 +283,20 @@ final class ArticleViewModel: ObservableObject {
     }
     
     private func prefetchImages(count: Int) async {
-        let session = URLSession(configuration: {
-            let c = URLSessionConfiguration.default
-            c.requestCachePolicy = .returnCacheDataElseLoad
-            c.urlCache = URLCache.shared
-            return c
-        }())
+        // Only prefetch what fits on first screen — more aggressive prefetch
+        // competes with on-screen loads and causes mass timeouts.
         let targets = articles.prefix(count)
         await withTaskGroup(of: Void.self) { group in
             for article in targets {
-                if let url = article.imageURL {
-                    group.addTask {
-                        if let (data, _) = try? await session.data(from: url), let img = UIImage(data: data) {
-                            ImageCache.shared.set(img, forKey: url.absoluteString)
-                        }
-                    }
-                }
-                if let url = article.authorProfileImage {
-                    group.addTask {
-                        if let (data, _) = try? await session.data(from: url), let img = UIImage(data: data) {
-                            ImageCache.shared.set(img, forKey: url.absoluteString)
-                        }
+                // Use resized thumbnail URL so we download ~80KB not ~3MB per image
+                let urls: [URL] = [article.imageURL, article.authorProfileImage]
+                    .compactMap { $0 }
+                for url in urls {
+                    guard ImageCache.shared.get(forKey: url.absoluteString) == nil else { continue }
+                    group.addTask(priority: .background) {
+                        guard let (data, _) = try? await ImageLoader.shared.data(from: url),
+                              let img = UIImage(data: data) else { return }
+                        ImageCache.shared.set(img, forKey: url.absoluteString)
                     }
                 }
             }

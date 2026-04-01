@@ -101,19 +101,11 @@ struct IOS_AppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if authManager.isAuthenticated {
-                    AdaptiveContentView()
-                        .environmentObject(authManager)
-                        .environment(\.locale, Locale(identifier: "en"))
-                } else {
-                    LoginView()
-                        .environmentObject(authManager)
-                        .environment(\.locale, Locale(identifier: "en"))
-                }
-            }
-            // Force full view swap when auth state changes so login screen appears immediately after sign-out
-            .id(authManager.isAuthenticated ? "authed" : "loggedOut")
+            AdaptiveContentView()
+                .environmentObject(authManager)
+                .environment(\.locale, Locale(identifier: "en"))
+                // Keep id so view refreshes correctly when auth state changes
+                .id(authManager.isAuthenticated ? "authed" : "loggedOut")
             .preferredColorScheme(resolvedTheme.preferredColorScheme)
             .onAppear {
                 // Set up Firebase Auth listener once view appears (after Firebase is configured)

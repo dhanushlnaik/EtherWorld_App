@@ -283,20 +283,38 @@ struct WebViewContainer: UIViewRepresentable {
             <meta charset=\"UTF-8\">
             <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
             <style>
+                :root {
+                    color-scheme: light dark;
+                }
                 body { 
                     font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto; 
                     font-size: 16px; 
                     line-height: 1.6; 
                     margin: 0; 
                     padding: 10px; 
-                    color: #e0e0e0; 
+                    color: #1a1a1a;
+                    background-color: transparent;
                 }
-                img { max-width: 100%; height: auto; margin: 10px 0; }
-                a { color: #64B5F6; }
-                h1, h2, h3 { color: #ffffff; margin-top: 16px; }
+                img { max-width: 100%; height: auto; margin: 10px 0; border-radius: 8px; }
+                a { color: #007AFF; }
+                h1, h2, h3 { color: #000000; margin-top: 16px; }
                 p { margin: 10px 0; }
-                strong { color: #f0f0f0; }
-                em { color: #e0e0e0; }
+                strong { color: #1a1a1a; }
+                em { color: #333333; }
+                blockquote { border-left: 3px solid #007AFF; padding-left: 12px; margin-left: 0; color: #444444; }
+                code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+                pre { background: #f5f5f5; padding: 12px; border-radius: 8px; overflow-x: auto; }
+                
+                @media (prefers-color-scheme: dark) {
+                    body { color: #e0e0e0; }
+                    h1, h2, h3 { color: #ffffff; }
+                    strong { color: #f0f0f0; }
+                    em { color: #d0d0d0; }
+                    a { color: #64B5F6; }
+                    blockquote { border-left-color: #64B5F6; color: #b0b0b0; }
+                    code { background: #2a2a2a; color: #e0e0e0; }
+                    pre { background: #1e1e1e; }
+                }
             </style>
             <script>
                 function sendHeight() {
@@ -416,18 +434,25 @@ struct HTMLContentView: UIViewRepresentable {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
+                :root { color-scheme: light dark; }
                 body { 
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; 
                     font-size: 16px; 
                     line-height: 1.6; 
                     margin: 0; 
                     padding: 10px; 
-                    color: #333; 
+                    color: #1a1a1a;
+                    background-color: transparent;
                 }
-                img { max-width: 100%; height: auto; margin: 10px 0; }
+                img { max-width: 100%; height: auto; margin: 10px 0; border-radius: 8px; }
                 a { color: #007AFF; }
-                h1, h2, h3 { color: #000; margin-top: 16px; }
+                h1, h2, h3 { color: #000000; margin-top: 16px; }
                 p { margin: 10px 0; }
+                @media (prefers-color-scheme: dark) {
+                    body { color: #e0e0e0; }
+                    h1, h2, h3 { color: #ffffff; }
+                    a { color: #64B5F6; }
+                }
             </style>
             <script>
                 window.addEventListener('load', function() {

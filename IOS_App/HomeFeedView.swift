@@ -1,6 +1,19 @@
 import SwiftUI
 import Combine
 
+// MARK: - View Extensions
+
+extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
 // MARK: - Supporting Views
 
 struct FeedHeaderView: View {
@@ -307,12 +320,16 @@ struct HeroArticleCard: View {
         @StateObject private var notificationManager = NotificationManager.shared
         @State private var navigationPath = NavigationPath()
         @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+        @Environment(\.horizontalSizeClass) private var horizontalSizeClass
         
         var body: some View {
             NavigationStack(path: $navigationPath) {
                 contentView
                     .navigationBarTitleDisplayMode(.inline)
-                    .searchable(text: $viewModel.searchText, prompt: LocalizedStringKey("search.placeholder"))
+                    // Only show search on iPhone; iPad uses sidebar search
+                    .if(horizontalSizeClass != .regular) { view in
+                        view.searchable(text: $viewModel.searchText, prompt: LocalizedStringKey("search.placeholder"))
+                    }
                     .task {
                         if notificationsEnabled {
                             NotificationManager.shared.checkForNewArticles(articles: viewModel.articles)
@@ -394,7 +411,7 @@ struct HeroArticleCard: View {
         }
         
         private var topStoriesSection: some View {
-            VStack(alignment: .leading, spacing: 16) {
+            LazyVStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Circle()
                         .fill(Color.primary)

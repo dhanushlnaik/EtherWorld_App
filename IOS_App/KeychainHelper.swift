@@ -10,7 +10,7 @@ final class KeychainHelper {
         guard let data = value.data(using: .utf8) else { return false }
         
         // Delete existing item if present
-        delete(forKey: key)
+        _ = delete(forKey: key)
         
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

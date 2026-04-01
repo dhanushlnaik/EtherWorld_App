@@ -119,9 +119,9 @@ final class AuthenticationManager: ObservableObject {
         otpSent = false
         defer { isLoading = false }
 
-        // Demo login: instantly "send" OTP for demo@etherworld.co
-        if normalizedEmail == "demo@etherworld.co" {
-            print("✅ Demo OTP sent for demo@etherworld.co")
+        // Demo login: instantly "send" OTP for demo@user.com
+        if normalizedEmail == "demo@user.com" {
+            print("✅ Demo OTP sent for demo@user.com")
             otpSent = true
             return
         }
@@ -139,7 +139,7 @@ final class AuthenticationManager: ObservableObject {
             if let networkError = error as? NetworkManager.NetworkError {
                 switch networkError {
                 case .notConfigured:
-                    errorMessage = "Email login is temporarily unavailable. Please try Apple/Google sign-in, or use demo@etherworld.co + 000000."
+                    errorMessage = "Email login is temporarily unavailable. Please try Apple/Google sign-in, or use demo@user.com + 000000."
                 case .serverError(let message):
                     errorMessage = message
                 default:
@@ -175,8 +175,8 @@ final class AuthenticationManager: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
 
-        // Demo login: bypass backend for demo@etherworld.co and code 000000
-        if normalizedEmail == "demo@etherworld.co" && code == "000000" {
+        // Demo login: bypass backend for demo@user.com and code 000000
+        if normalizedEmail == "demo@user.com" && code == "000000" {
             let user = User(
                 id: "demo-user-id",
                 email: normalizedEmail,
@@ -187,7 +187,7 @@ final class AuthenticationManager: ObservableObject {
             isAuthenticated = true
             currentUser = user
             UserDefaults.standard.removeObject(forKey: "emailForOTP")
-            print("✅ Demo login successful for demo@etherworld.co")
+            print("✅ Demo login successful for demo@user.com")
             return
         }
 
@@ -224,7 +224,7 @@ final class AuthenticationManager: ObservableObject {
             if let networkError = error as? NetworkManager.NetworkError {
                 switch networkError {
                 case .notConfigured:
-                    errorMessage = "Email login is temporarily unavailable. Please try Apple/Google sign-in, or use demo@etherworld.co + 000000."
+                    errorMessage = "Email login is temporarily unavailable. Please try Apple/Google sign-in, or use demo@user.com + 000000."
                 case .serverError(let message):
                     errorMessage = message
                 case .unauthorized:
@@ -252,7 +252,7 @@ final class AuthenticationManager: ObservableObject {
     
 
     
-    func signInWithApple(authorization: ASAuthorization) {
+    func signInWithApple(authorization: ASAuthorization, newsletterOptIn: Bool = false) {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             errorMessage = "Failed to get Apple ID credentials"
             return
@@ -285,15 +285,23 @@ final class AuthenticationManager: ObservableObject {
             
             do {
                 let result = try await FirebaseAuth.Auth.auth().signIn(with: credential)
-                print("✅ Apple Sign-In successful via Firebase: \(result.user.email ?? "no email")")
-                
-                // Log email and name to Supabase
+                // Always use Firebase's email — Apple only provides it on the very first sign-in;
+                // subsequent sign-ins return nil from the credential.
                 let email = result.user.email ?? ""
-                let name = appleIDCredential.fullName?.givenName ?? appleIDCredential.fullName?.familyName ?? nil
+                let name = result.user.displayName
+                    ?? appleIDCredential.fullName?.givenName
+                    ?? appleIDCredential.fullName?.familyName
+                print("✅ Apple Sign-In successful via Firebase: \(email.isEmpty ? "no email" : email)")
+                
                 if !email.isEmpty {
                     Task {
                         await SupabaseService.shared.logEmail(email: email, name: name)
-                        print("✅ Logged Apple sign-in email to Supabase: \(email)")
+                        await SupabaseService.shared.logNewsletterPreference(
+                            email: email,
+                            name: name,
+                            subscribed: newsletterOptIn,
+                            authMethod: "apple"
+                        )
                     }
                 }
                 
@@ -311,7 +319,7 @@ final class AuthenticationManager: ObservableObject {
         #endif
     }
     
-    func signInWithGoogle() async {
+    func signInWithGoogle(newsletterOptIn: Bool = false) async {
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -344,13 +352,19 @@ final class AuthenticationManager: ObservableObject {
             }
             print("✅ Google Sign-In successful via Firebase: \(authResult.user.email ?? "no email")")
             
-            // Log email to Supabase
+            // Log email and newsletter preference using the Firebase result directly —
+            // do NOT rely on currentUser here, it is populated async by the Firebase listener.
             let email = authResult.user.email ?? ""
             let name = authResult.user.displayName
             if !email.isEmpty {
                 Task {
                     await SupabaseService.shared.logEmail(email: email, name: name)
-                    print("✅ Logged Google sign-in email to Supabase: \(email)")
+                    await SupabaseService.shared.logNewsletterPreference(
+                        email: email,
+                        name: name,
+                        subscribed: newsletterOptIn,
+                        authMethod: "google"
+                    )
                 }
             }
             
@@ -407,9 +421,11 @@ final class AuthenticationManager: ObservableObject {
             errorMessage = "Deletion failed: \(error.localizedDescription)"
             print("❌ Firebase account deletion error: \(error)")
             
-            // If it requires recent login, show specific error
+            // If it requires recent login, automatically sign out to force re-authentication
             if (error as NSError).code == AuthErrorCode.requiresRecentLogin.rawValue {
-                errorMessage = "Please sign out and sign back in before deleting your account for security reasons."
+                errorMessage = "For security reasons, please sign out and sign back in before deleting your account."
+                // Automatically sign out to force re-authentication
+                logout()
             }
         }
         #else

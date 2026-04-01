@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AdaptiveContentView: View {
     @StateObject private var viewModel = ArticleViewModel()
-    @StateObject private var authManager = AuthenticationManager()
+    @EnvironmentObject private var authManager: AuthenticationManager
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedTab: NavigationTab = .home
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic

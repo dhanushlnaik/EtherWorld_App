@@ -53,7 +53,6 @@ final class SupabaseService {
         let appTheme: String
         let analyticsEnabled: Bool
         let newsletterOptIn: Bool
-        let appLanguage: String
         let lastUpdated: Date
     }
 
@@ -74,14 +73,17 @@ final class SupabaseService {
     }
     
     func logEmail(email: String, name: String?) async {
-        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else { return }
+        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else {
+            print("⚠️ Supabase not configured – email not logged (check SupabaseURL/SupabaseAnonKey in Secrets.xcconfig)")
+            return
+        }
         let endpoint = baseURL.appendingPathComponent("rest/v1/emails")
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("upsert", forHTTPHeaderField: "Prefer")
+        request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
         
         let payload = [EmailRecord(email: email.lowercased(), name: name)]
         let encoder = JSONEncoder()
@@ -89,39 +91,56 @@ final class SupabaseService {
         request.httpBody = try? encoder.encode(payload)
         
         do {
-            _ = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                print("⚠️ Supabase logEmail HTTP \(http.statusCode): \(body)")
+            } else {
+                print("✅ Supabase logEmail succeeded for \(email)")
+            }
         } catch {
-            return
+            print("⚠️ Supabase logEmail network error: \(error.localizedDescription)")
         }
     }
 
     func syncUserPreferences(_ prefs: UserPreferences) async {
-        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else { return }
+        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else {
+            print("⚠️ Supabase not configured – preferences not synced")
+            return
+        }
         let endpoint = baseURL.appendingPathComponent("rest/v1/user_preferences")
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("upsert", forHTTPHeaderField: "Prefer")
         request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         request.httpBody = try? encoder.encode([prefs])
 
-        _ = try? await URLSession.shared.data(for: request)
+        if let (data, response) = try? await URLSession.shared.data(for: request) {
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                print("⚠️ Supabase syncPreferences HTTP \(http.statusCode): \(body)")
+            }
+        } else {
+            print("⚠️ Supabase syncPreferences network error")
+        }
     }
 
     func logNewsletterPreference(email: String, name: String?, subscribed: Bool, authMethod: String) async {
-        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else { return }
+        guard let baseURL = seededSupabaseURL(), let anonKey = seededSupabaseAnonKey() else {
+            print("⚠️ Supabase not configured – newsletter preference not logged")
+            return
+        }
         let endpoint = baseURL.appendingPathComponent("rest/v1/newsletter_subscribers")
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("upsert", forHTTPHeaderField: "Prefer")
         request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
 
         let payload = [NewsletterSubscriber(email: email.lowercased(), name: name, subscribed: subscribed, authMethod: authMethod)]
@@ -130,10 +149,15 @@ final class SupabaseService {
         request.httpBody = try? encoder.encode(payload)
 
         do {
-            _ = try await URLSession.shared.data(for: request)
-            print("✅ Newsletter preference logged for \(email)")
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                print("⚠️ Supabase newsletter HTTP \(http.statusCode): \(body)")
+            } else {
+                print("✅ Newsletter preference logged for \(email) [subscribed=\(subscribed)]")
+            }
         } catch {
-            print("⚠️ Failed to log newsletter preference: \(error.localizedDescription)")
+            print("⚠️ Supabase newsletter network error: \(error.localizedDescription)")
         }
     }
 }

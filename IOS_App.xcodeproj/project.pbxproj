@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9598FF2F0B6C40007FF60C /* Localizable.strings */; };
 		FEFA00012FABCDEF00000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10012FABCDEF00000001 /* FirebaseAuth */; };
 		FEFA00022FABCDEF00000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10022FABCDEF00000002 /* FirebaseCore */; };
 /* End PBXBuildFile section */
@@ -30,10 +29,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		FE9596F92F0B6C3F007FF60C /* IOS_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = IOS_App.app; path = EtherWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9596F92F0B6C3F007FF60C /* EtherWorld.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EtherWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppTests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppUITests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE9598FF2F0B6C40007FF60C /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = IOS_App/en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -81,14 +79,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		FE2A57902F2B7B24007A7EBC /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				FE9598FF2F0B6C40007FF60C /* Localizable.strings */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		FE9596F02F0B6C3F007FF60C = {
 			isa = PBXGroup;
 			children = (
@@ -96,14 +86,13 @@
 				FE95970B2F0B6C40007FF60C /* IOS_AppTests */,
 				FE9597152F0B6C40007FF60C /* IOS_AppUITests */,
 				FE9596FA2F0B6C3F007FF60C /* Products */,
-				FE2A57902F2B7B24007A7EBC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
 		FE9596FA2F0B6C3F007FF60C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE9596F92F0B6C3F007FF60C /* IOS_App.app */,
+				FE9596F92F0B6C3F007FF60C /* EtherWorld.app */,
 				FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */,
 				FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */,
 			);
@@ -130,7 +119,7 @@
 			);
 			name = IOS_App;
 			productName = IOS_App;
-			productReference = FE9596F92F0B6C3F007FF60C /* IOS_App.app */;
+			productReference = FE9596F92F0B6C3F007FF60C /* EtherWorld.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FE9597072F0B6C40007FF60C /* IOS_AppTests */ = {
@@ -227,7 +216,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,6 +400,7 @@
 				CODE_SIGN_ENTITLEMENTS = IOS_App/IOS_App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2R2CQNX632;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "IOS_App/IOS-App-Info.plist";
@@ -448,6 +437,7 @@
 				CODE_SIGN_ENTITLEMENTS = IOS_App/IOS_App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2R2CQNX632;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "IOS_App/IOS-App-Info.plist";

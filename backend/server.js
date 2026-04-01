@@ -442,6 +442,37 @@ app.post('/auth/verify-otp', async (req, res) => {
   }
 });
 
+// GET /articles - Mock endpoint for iOS app data loading
+app.get('/articles', (req, res) => {
+  const mockArticles = [
+    {
+      id: 1,
+      title: 'Welcome to EtherWorld',
+      content: 'Discover the latest in technology and innovation.',
+      author: 'EtherWorld Team',
+      publishedAt: new Date().toISOString(),
+      imageUrl: null
+    },
+    {
+      id: 2,
+      title: 'Getting Started with Our App',
+      content: 'Learn how to navigate and make the most of your experience.',
+      author: 'EtherWorld Team',
+      publishedAt: new Date(Date.now() - 86400000).toISOString(),
+      imageUrl: null
+    },
+    {
+      id: 3,
+      title: 'Tips for a Great User Experience',
+      content: 'Here are some tips to enhance your interaction with our platform.',
+      author: 'EtherWorld Team',
+      publishedAt: new Date(Date.now() - 172800000).toISOString(),
+      imageUrl: null
+    }
+  ];
+  res.json(mockArticles);
+});
+
 // Health check
 app.get('/health', (req, res) => {
   const fromAddress = resolveFromAddress();
