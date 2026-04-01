@@ -4,7 +4,6 @@ GoogleService-Info*.plist
 
 # App Configuration - CONTAINS API KEYS
 Config.xcconfig
-IOS-App-Info.plist
 
 # Build & Xcode
 build/
