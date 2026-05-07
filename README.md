@@ -57,6 +57,7 @@ A native iOS app for reading crypto and blockchain content from EtherWorld.
 
 The app requests the following permissions:
 - **Background fetch**: Article updates
+- **Background audio**: Listen Mode (text-to-speech) keeps playing when the screen is locked or the app is backgrounded
 
 ## App Store Submission Checklist
 
@@ -96,7 +97,13 @@ The app requests the following permissions:
 
 ### 4.2.2 Re-Submission Assets
 - [x] Native functionality remediation implemented (in-app navigation policy, in-app privacy access, personalization onboarding)
+- [x] **NEW** Markets tab: native crypto watchlist (CoinGecko) with sparklines, add/remove/reorder, auto-refresh
+- [x] **NEW** Listen Mode: native AVSpeechSynthesizer audio playback with background audio + speed control
+- [x] **NEW** Highlights & Notes: 5 colors, personal notes, search, on-device persistence
+- [x] **NEW** Reading Stats & Streak: streak card, 14-day chart, top topics
+- [x] **NEW** Siri Shortcuts via App Intents (open latest, listen aloud, open watchlist)
 - [x] Reviewer notes prepared: see `APP_REVIEW_NOTES.md`
+- [ ] In Xcode → Target → Signing & Capabilities, ensure "Background Modes" is added with **Audio, AirPlay, and Picture in Picture** + **Background fetch** checked
 - [ ] Validate reviewer test path on physical device before submission
 
 ### Screenshots Needed

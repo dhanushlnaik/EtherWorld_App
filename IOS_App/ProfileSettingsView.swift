@@ -58,6 +58,25 @@ struct ProfileSettingsView: View {
                     Text(LocalizedStringKey("profile.title"))
                 }
                 
+                // Reading - native features
+                Section {
+                    NavigationLink {
+                        ReadingStatsView()
+                    } label: {
+                        Label("Reading Stats & Streak", systemImage: "flame.fill")
+                    }
+                    .accessibilityIdentifier("profile-reading-stats-link")
+
+                    NavigationLink {
+                        HighlightsView()
+                    } label: {
+                        Label("Highlights & Notes", systemImage: "highlighter")
+                    }
+                    .accessibilityIdentifier("profile-highlights-link")
+                } header: {
+                    Text("Reading")
+                }
+
                 // Account Management
                 Section {
                     HStack {

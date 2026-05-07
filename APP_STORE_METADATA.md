@@ -4,33 +4,40 @@
 EtherWorld
 
 ## Subtitle
-Crypto news, personalized for iPhone and iPad
+Crypto news, prices, listen mode
 
 ## Promotional Text
-Stay ahead with curated crypto and blockchain coverage, offline reading, and a native For You feed tailored to your interests.
+Track crypto prices in your native watchlist, listen to articles in the background, save highlights and notes, and keep a daily reading streak — all in one focused iPhone and iPad app.
 
 ## Description
-EtherWorld is a native iOS app for reading crypto and blockchain content from EtherWorld with a fast, focused reading experience.
+EtherWorld is a native iOS app for crypto and blockchain readers and traders. It combines a focused reading experience with a real-time markets tracker, listen mode, personal highlights, and reading insights — all powered by native iOS frameworks.
 
-Discover the latest articles, open author profiles, save stories for offline reading, and mark what you have already read. Personalize the home feed with topic preferences, switch between For You and Latest views, and keep your reading experience in sync across devices.
+Markets — track the prices of any cryptocurrency in a customizable watchlist. See 7-day sparkline charts, 24-hour change, market cap, and volume. Live data refreshes automatically every minute.
 
-Features:
-- Native Apple, Google, and email OTP sign-in
-- Personalized For You feed with topic selection
-- Browse curated crypto and blockchain articles
-- Search articles, tags, and authors
-- Save articles for offline reading
-- Track read and saved state
+Listen mode — every article can be read aloud using on-device speech synthesis with adjustable speed and full background audio support. Lock the screen and keep listening.
+
+Highlights & notes — save your favorite passages from any article with five highlight colors and personal notes. Search and filter your highlights in a dedicated hub.
+
+Reading stats & streak — keep a daily reading streak, see your top topics, total minutes read, and a 14-day reading chart. All computed on-device.
+
+For You feed — pick the topics you care about and get a personalized ranking, or switch to Latest at any time.
+
+Other native features:
+- Apple, Google, and email OTP sign-in
+- Save articles for offline reading and reading later
+- Author profiles and shareable article links
+- Search across articles, tags, and authors
 - Background refresh for fresh content
 - Push notification preferences and quiet hours
-- Author profiles and article sharing
-- Privacy policy, data export, and account controls
-- iPad-friendly layout with sidebar support
+- iPad-optimized layout with a sidebar
+- Siri shortcuts to open the latest article, listen aloud, or open your watchlist
+- Privacy policy, data export, and full account controls
+- Spotlight indexing of articles for system-wide search
 
-EtherWorld uses Ghost CMS as a content source, but the app provides native reading tools, offline support, search, personalization, and device-specific navigation that go beyond a web browsing experience.
+EtherWorld uses Ghost CMS as a content source for articles and CoinGecko for live market data, but the app provides native reading tools, offline support, search, personalization, listen mode, highlights, reading stats, and live markets that go far beyond a web browsing experience.
 
 ## Keywords
-crypto, blockchain, bitcoin, ethereum, news, articles, web3, defi, nft, trading, markets, readers, offline, personalization
+crypto, blockchain, bitcoin, ethereum, prices, watchlist, news, articles, web3, defi, nft, markets, reader, offline, listen, highlights, streak, personalization
 
 ## Support URL
 https://etherworld.co
@@ -39,17 +46,23 @@ https://etherworld.co
 https://etherworld.co/privacy
 
 ## Reviewer Notes
-Use the following test path in App Store Connect:
-1. Launch the app and sign in.
+See APP_REVIEW_NOTES.md for the full reviewer test path.
+
+Quick summary:
+1. Launch and sign in.
 2. Complete personalization onboarding.
-3. Open the For You feed.
-4. Open an article and verify internal links stay in-app.
-5. Verify external links open intentionally in Safari.
-6. Open Settings and change personalization preferences.
-7. Open Privacy Policy from within the app.
-8. Confirm saved articles and offline reading work.
+3. Tap the Markets tab and confirm live prices, watchlist add / remove / reorder.
+4. Open any article, use Listen mode, lock the screen to confirm background audio.
+5. Tap the highlighter icon to save a passage with a note.
+6. Open Profile → Reading Stats & Streak and Highlights & Notes.
+7. Confirm Siri shortcuts ("Read me the latest EtherWorld article", "Show my crypto watchlist in EtherWorld") are registered in iOS Settings.
+8. Confirm internal article links stay in-app and external links open intentionally in Safari.
 
 ## Notes on Accuracy
+- Markets data is sourced from CoinGecko's public API.
+- Listen mode uses Apple's AVSpeechSynthesizer; it requires no network for synthesis.
+- Highlights, notes, and reading stats are stored locally on device.
+- Background audio capability is enabled via UIBackgroundModes.
 - Do not mention camera, photo library, or Face ID permissions.
 - Do not mention a demo login path.
 - Do not describe session revocation as fully implemented; it is currently a session details UI.
