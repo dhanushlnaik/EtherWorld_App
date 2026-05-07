@@ -6,10 +6,14 @@ struct ArticleDetailView: View {
     let article: Article
     @EnvironmentObject var viewModel: ArticleViewModel
     @StateObject private var detailVM: ArticleDetailViewModel
+    @ObservedObject private var audioReader = AudioReaderManager.shared
+    @ObservedObject private var highlightsManager = HighlightsManager.shared
     @State private var isSaved: Bool = false
     @State private var isRead: Bool = false
     @State private var scrollOffset: CGFloat = 0
     @State private var isExcerptExpanded: Bool = false
+    @State private var showingHighlightSheet: Bool = false
+    @State private var hasLoggedRead: Bool = false
     
     private var excerptWords: [String] {
         detailVM.article.displayExcerpt.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
@@ -65,6 +69,8 @@ struct ArticleDetailView: View {
                         .font(.title)
                         .bold()
                         .accessibilityAddTraits(.isHeader)
+
+                    AudioPlayerControls(article: detailVM.article)
                     
                     // Expandable Excerpt
                     VStack(alignment: .leading, spacing: 4) {
@@ -156,6 +162,16 @@ struct ArticleDetailView: View {
                     }
                     .accessibilityLabel(LocalizedStringKey("article.share"))
                     .accessibilityHint(LocalizedStringKey("article.shareHint"))
+
+                    Button(action: {
+                        showingHighlightSheet = true
+                        HapticFeedback.light()
+                    }) {
+                        Image(systemName: "highlighter")
+                            .foregroundColor(.indigo)
+                    }
+                    .accessibilityLabel("Add highlight")
+                    .accessibilityIdentifier("article-highlight-button")
                     
                     Button(action: {
                         isSaved.toggle()
@@ -169,12 +185,19 @@ struct ArticleDetailView: View {
                     .accessibilityHint(LocalizedStringKey(isSaved ? "article.removeBookmarkHint" : "article.addBookmarkHint"))
                 }
             )
+            .sheet(isPresented: $showingHighlightSheet) {
+                AddHighlightSheet(article: detailVM.article)
+            }
             .onAppear {
                 isSaved = detailVM.article.isSaved
                 isRead = detailVM.article.isRead
                 // Mark as read when user opens the article
                 self.viewModel.markAsRead(article: detailVM.article)
                 AnalyticsManager.shared.log(.articleOpen, params: ["id": detailVM.article.id])
+                if !hasLoggedRead {
+                    hasLoggedRead = true
+                    ReadingStatsManager.shared.recordArticleRead(article: detailVM.article)
+                }
             }
             .task {
                 await detailVM.loadContentIfNeeded(service: viewModel.articleService)

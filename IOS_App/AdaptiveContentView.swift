@@ -6,19 +6,31 @@ struct AdaptiveContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedTab: NavigationTab = .home
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
-    
+
     enum NavigationTab: String, CaseIterable {
         case home = "tab.home"
+        case markets = "tab.markets"
         case search = "tab.search"
         case saved = "tab.saved"
         case profile = "tab.profile"
-        
+
         var icon: String {
             switch self {
-            case .home: return "house.fill"
-            case .search: return "magnifyingglass"
-            case .saved: return "bookmark.fill"
+            case .home:    return "house.fill"
+            case .markets: return "chart.line.uptrend.xyaxis"
+            case .search:  return "magnifyingglass"
+            case .saved:   return "bookmark.fill"
             case .profile: return "person.crop.circle.fill"
+            }
+        }
+
+        var localizedTitle: String {
+            switch self {
+            case .home:    return "Home"
+            case .markets: return "Markets"
+            case .search:  return "Search"
+            case .saved:   return "Saved"
+            case .profile: return "Profile"
             }
         }
     }
@@ -26,10 +38,8 @@ struct AdaptiveContentView: View {
     var body: some View {
         Group {
             if horizontalSizeClass == .regular {
-                // iPad: NavigationSplitView with sidebar
                 iPadLayout
             } else {
-                // iPhone: TabView
                 iPhoneLayout
             }
         }
@@ -45,14 +55,37 @@ struct AdaptiveContentView: View {
         .task {
             await viewModel.load()
         }
+        // Wire up Siri / App Intents notifications
+        .onReceive(NotificationCenter.default.publisher(for: .etherworldOpenLatest)) { _ in
+            selectedTab = .home
+            Task { await openLatestArticleIfAvailable(playAudio: false) }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .etherworldOpenWatchlist)) { _ in
+            selectedTab = .markets
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .etherworldReadLatestAloud)) { _ in
+            selectedTab = .home
+            Task { await openLatestArticleIfAvailable(playAudio: true) }
+        }
+    }
+
+    private func openLatestArticleIfAvailable(playAudio: Bool) async {
+        if viewModel.articles.isEmpty {
+            await viewModel.load()
+        }
+        if let latest = viewModel.articles.first {
+            // Reuse the deep-link mechanism the existing Home flow already understands.
+            NotificationManager.shared.selectedArticleId = latest.id
+            if playAudio {
+                AudioReaderManager.shared.play(article: latest)
+            }
+        }
     }
     
     @ViewBuilder
     private var iPadLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            // Sidebar
             VStack(spacing: 0) {
-                // Sidebar Logo
                 HStack {
                     Image("Logo")
                         .resizable()
@@ -71,28 +104,25 @@ struct AdaptiveContentView: View {
                             selectedTab = tab
                         } label: {
                             Label {
-                                Text(LocalizedStringKey(tab.rawValue))
+                                Text(tab.localizedTitle)
                             } icon: {
                                 Image(systemName: tab.icon)
                             }
                         }
                         .listRowBackground(selectedTab == tab ? Color.blue.opacity(0.1) : Color.clear)
+                        .accessibilityIdentifier("sidebar-tab-\(tab.rawValue)")
                     }
                 }
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
         } detail: {
-            // Detail view based on selection
             Group {
                 switch selectedTab {
-                case .home:
-                    HomeFeedView()
-                case .search:
-                    DiscoverView()
-                case .saved:
-                    SavedArticlesView()
-                case .profile:
-                    ProfileSettingsView()
+                case .home:    HomeFeedView()
+                case .markets: CryptoWatchlistView()
+                case .search:  DiscoverView()
+                case .saved:   SavedArticlesView()
+                case .profile: ProfileSettingsView()
                 }
             }
         }
@@ -111,7 +141,18 @@ struct AdaptiveContentView: View {
                     }
                 }
                 .tag(NavigationTab.home)
-            
+
+            CryptoWatchlistView()
+                .tabItem {
+                    Label {
+                        Text("Markets")
+                    } icon: {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                    }
+                }
+                .tag(NavigationTab.markets)
+                .accessibilityIdentifier("tab-markets")
+
             DiscoverView()
                 .tabItem {
                     Label {
@@ -121,7 +162,7 @@ struct AdaptiveContentView: View {
                     }
                 }
                 .tag(NavigationTab.search)
-            
+
             SavedArticlesView()
                 .tabItem {
                     Label {
@@ -131,7 +172,7 @@ struct AdaptiveContentView: View {
                     }
                 }
                 .tag(NavigationTab.saved)
-            
+
             ProfileSettingsView()
                 .tabItem {
                     Label {
