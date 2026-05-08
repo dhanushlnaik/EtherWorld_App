@@ -1,13 +1,62 @@
 # EtherWorld iOS App
 
-A native iOS app for reading crypto and blockchain content from EtherWorld.
+A native iOS app for crypto and blockchain readers — articles, live market prices, listen-mode audio, highlights, and reading stats — built with SwiftUI.
 
 ## App Details
 
 - **Name**: EtherWorld
 - **Bundle ID**: co.etherworld.app
-- **Version**: 1.0 (Build 1)
+- **Version**: 1.0 (build number must be bumped before re-archive)
 - **Platform**: iOS 16.0+, iPadOS 16.0+
+
+---
+
+## 🆕 Latest Changes — App Store 4.2.2 Remediation (Jan 2026)
+
+> Apple rejected v1.0 build 1 on **March 18, 2026** under Guideline **4.2.2 — Minimum Functionality** (Submission ID `03a3f4d3-c263-4dc2-aef3-04006428179b`), citing "limited or no native functionality" beyond aggregated web content. This release adds substantial native iOS-only capabilities that fundamentally cannot be reproduced by a mobile browser.
+
+### What was added
+
+| Feature | Files | Why it satisfies 4.2.2 |
+|---|---|---|
+| **Markets tab** — live crypto watchlist (CoinGecko) with sparkline charts, add/remove/reorder, 60-second auto-refresh, search-to-add, coin detail with stats | `CryptoModels.swift`, `CryptoMarketService.swift`, `CryptoMarketViewModel.swift`, `CryptoWatchlistView.swift` | A native financial tracker not present on etherworld.co; data persisted on-device. |
+| **Listen Mode** — `AVSpeechSynthesizer`-driven audio reader on every article with play/pause/stop, speed control (0.75×–1.5×), progress bar, and **background audio** | `AudioReaderManager.swift` (+ inline `AudioPlayerControls`), `IOS-App-Info.plist` (UIBackgroundModes) | On-device speech synthesis and background-locked playback are device-only capabilities. |
+| **Highlights & Notes** — five-color highlights with personal notes per article, on-device JSON store, dedicated browse hub with search and color filtering | `HighlightsManager.swift` (+ `AddHighlightSheet`, `HighlightsView`) | A personal reading journal stored locally; meaningless without the app. |
+| **Reading Stats & Streak** — daily streak (current + longest), total articles, total minutes, 14-day reading chart, top topics leaderboard | `ReadingStatsManager.swift` (+ `ReadingStatsView`) | All computed and persisted on-device. |
+| **Siri Shortcuts** via App Intents — "Read me the latest EtherWorld article", "Show my crypto watchlist in EtherWorld", "Open the latest article in EtherWorld" | `EtherworldAppIntents.swift` | Native voice control wired to in-app navigation and audio playback. |
+
+### Files modified
+
+- `IOS_App/AdaptiveContentView.swift` — added 5th **Markets** tab on iPhone, sidebar entry on iPad, and observers for the three App Intent notifications.
+- `IOS_App/ArticleDetailView.swift` — inline `AudioPlayerControls` below the title, "highlighter" toolbar button, and reading-stats logging on appear.
+- `IOS_App/ProfileSettingsView.swift` — new "Reading" section linking to **Reading Stats & Streak** and **Highlights & Notes**.
+- `IOS_App/IOS-App-Info.plist` — added `UIBackgroundModes` (`audio`, `fetch`, `processing`, `remote-notification`).
+- `APP_REVIEW_NOTES.md` — rewritten with a 12-step reviewer test path tied to the new features.
+- `APP_STORE_METADATA.md` — updated subtitle, description, keywords, and reviewer notes for resubmission.
+- `memory/PRD.md` — full product record of the remediation work.
+
+### Required manual steps before re-archiving
+
+1. **Xcode** → target **IOS_App** → **Signing & Capabilities** → **+ Capability** → **Background Modes** → check **Audio, AirPlay, and Picture in Picture** + **Background fetch**. *(The Info.plist key is already set; Xcode also needs the capability checkbox enabled.)*
+2. **Bump the build number** (`CURRENT_PROJECT_VERSION`) before archiving.
+3. Walk through the reviewer test path in `APP_REVIEW_NOTES.md` on a physical device.
+4. Paste the new "Notes for Review" text from `APP_REVIEW_NOTES.md` into App Store Connect when resubmitting.
+5. Update the App Store Connect listing copy from `APP_STORE_METADATA.md`.
+
+### How to view the diff
+
+```bash
+cd /app
+git status              # all touched files
+git diff --stat         # per-file additions/deletions summary
+git diff IOS_App/AdaptiveContentView.swift   # one specific file
+```
+
+In Xcode: open `IOS_App.xcodeproj` → **Source Control navigator** (⌥⌘2) for line-level diffs.
+
+> The Xcode project uses synchronized folders (`PBXFileSystemSynchronizedRootGroup`, `objectVersion 77`), so all new Swift files are picked up automatically. **No `project.pbxproj` edits are required.**
+
+---
 
 ## Features
 
@@ -17,8 +66,16 @@ A native iOS app for reading crypto and blockchain content from EtherWorld.
 - ✅ OTP via Email (6-digit verification code)
 - ✅ Firebase Authentication
 
+### Native Reader Features (4.2.2 hardening)
+- ✅ **Markets tab** — live crypto watchlist with sparkline charts (CoinGecko)
+- ✅ **Listen Mode** — TTS audio playback per article with speed control + background audio
+- ✅ **Highlights & Notes** — 5 colors, personal notes, on-device search
+- ✅ **Reading Stats & Streak** — daily streak, 14-day chart, top topics
+- ✅ **Siri Shortcuts** via App Intents (latest article / listen aloud / watchlist)
+
 ### Core Features
 - ✅ Browse articles from Ghost CMS
+- ✅ For You feed with topic personalization (and Latest mode)
 - ✅ Search with language filtering
 - ✅ Bookmark/Save articles for offline reading
 - ✅ Mark articles as read
@@ -30,6 +87,7 @@ A native iOS app for reading crypto and blockchain content from EtherWorld.
 - ✅ iPad optimized with sidebar
 - ✅ Author profiles
 - ✅ Share articles
+- ✅ Spotlight indexing of articles
 
 ### Privacy & Data
 - ✅ Privacy Policy view
@@ -127,21 +185,43 @@ The app requests the following permissions:
 - **OfflineManager**: Local caching and offline support
 - **BackgroundRefreshManager**: Background updates
 - **SpotlightIndexer**: iOS Spotlight integration
+- **CryptoMarketService** *(new)*: CoinGecko public market data client
+- **CryptoMarketViewModel** *(new)*: Watchlist state, ordering, auto-refresh
+- **AudioReaderManager** *(new)*: AVSpeechSynthesizer-backed Listen Mode (background audio)
+- **HighlightsManager** *(new)*: On-device highlights and notes store
+- **ReadingStatsManager** *(new)*: Streaks, totals, top topics, 14-day history
 
 ### Views
 - **LoginView**: Authentication screen
 - **HomeFeedView**: Main article feed
-- **ArticleDetailView**: Full article view
+- **ArticleDetailView**: Full article view (now with inline `AudioPlayerControls` and a highlight toolbar button)
 - **DiscoverView**: Search and explore
 - **SavedArticlesView**: Bookmarked articles
 - **SettingsView**: App settings
-- **ProfileSettingsView**: User profile
+- **ProfileSettingsView**: User profile (now links to Reading Stats and Highlights)
 - **AuthorProfileView**: Author details
+- **AdaptiveContentView**: 5-tab iPhone layout / iPad sidebar (Home, Markets, Search, Saved, Profile)
+- **CryptoWatchlistView** *(new)*: Markets tab — list, add, reorder, swipe-to-remove
+- **AddCoinSearchView** *(new)*: Search any coin to add to watchlist
+- **CoinDetailView** *(new)*: Coin detail with sparkline and stat grid
+- **AudioPlayerControls** *(new)*: Inline article audio bar
+- **AddHighlightSheet** *(new)*: Save passage + note + color
+- **HighlightsView** *(new)*: Browse, filter and search highlights
+- **ReadingStatsView** *(new)*: Streak card, 14-day chart, top topics
+
+### App Intents *(new)*
+- `OpenLatestArticleIntent`
+- `OpenCryptoWatchlistIntent`
+- `ReadLatestArticleIntent`
+- Wired in `EtherworldShortcutsProvider` and observed by `AdaptiveContentView`.
 
 ### Data Models
 - **Article**: Main content model
 - **Author**: Writer information
 - **User**: Account data
+- **Coin** / **SparklineData** / **CoinSearchResult** *(new)*: CoinGecko market models
+- **ArticleHighlight** / **HighlightColor** *(new)*: User highlights
+- **ReadingDayLog** *(new)*: Per-day reading totals
 
 ## Backend Services
 
@@ -161,6 +241,12 @@ The app requests the following permissions:
 - Analytics
 - Cloud Messaging (push notifications)
 - Crashlytics (optional)
+
+### CoinGecko *(new — Markets tab)*
+- Live cryptocurrency price + sparkline data via the public `/coins/markets` and `/search` endpoints
+- No API key required
+- 60-second auto-refresh; pull-to-refresh supported
+- Rate limit: ~10–30 req/min on the free public tier — well within app usage
 
 ## Build Instructions
 
