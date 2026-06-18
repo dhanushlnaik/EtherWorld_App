@@ -1,10 +1,19 @@
 # EtherWorld App Store Metadata
 
 ## App Name
-EtherWorld
+EtherWorld by Avarch
 
 ## Subtitle
-Crypto news, prices, listen mode
+Web3 & Tech News
+
+## App Store General Information
+- **Bundle ID:** co.etherworld.app
+- **SKU:** co.etherworld.app
+- **Apple ID:** 6759963170
+- **Primary Language:** English (U.S.)
+- **Category:** News, Education
+- **Content Rights:** No, this app does not contain, show, or access third-party content.
+- **License Agreement:** Apple's Standard License Agreement
 
 ## Promotional Text
 Track crypto prices in your native watchlist, listen to articles in the background, save highlights and notes, and keep a daily reading streak — all in one focused iPhone and iPad app.

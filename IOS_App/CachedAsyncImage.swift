@@ -125,6 +125,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 }
 
 // Memory cache for images
+@MainActor
 class ImageCache {
     static let shared = ImageCache()
     

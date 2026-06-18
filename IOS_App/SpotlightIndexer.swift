@@ -1,11 +1,11 @@
 import Foundation
 import CoreSpotlight
-import MobileCoreServices
+import UniformTypeIdentifiers
 
 enum SpotlightIndexer {
     static func index(articles: [Article]) {
         let items: [CSSearchableItem] = articles.map { article in
-            let attributeSet = CSSearchableItemAttributeSet(itemContentType: kUTTypeText as String)
+            let attributeSet = CSSearchableItemAttributeSet(itemContentType: UTType.text.identifier)
             attributeSet.title = article.title
             attributeSet.contentDescription = article.excerpt
             attributeSet.keywords = article.tags

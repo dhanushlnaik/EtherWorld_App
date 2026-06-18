@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class CryptoMarketViewModel: ObservableObject {
@@ -92,3 +93,4 @@ final class CryptoMarketViewModel: ObservableObject {
         return formatter.localizedString(for: lastUpdated, relativeTo: Date())
     }
 }
+

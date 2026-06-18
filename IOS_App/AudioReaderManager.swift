@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import SwiftUI
+import Combine
 
 /// Singleton text-to-speech reader that allows users to listen to articles.
 /// Supports background audio (the app must enable the "Audio, AirPlay, and Picture in Picture"
@@ -263,3 +264,4 @@ struct AudioPlayerControls: View {
         return String(format: "%.2gx", Double(factor))
     }
 }
+

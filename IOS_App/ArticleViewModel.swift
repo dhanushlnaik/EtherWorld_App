@@ -307,14 +307,14 @@ final class ArticleViewModel: ObservableObject {
                 if let url = article.imageURL {
                     group.addTask {
                         if let (data, _) = try? await session.data(from: url), let img = UIImage(data: data) {
-                            ImageCache.shared.set(img, forKey: url.absoluteString)
+                            await ImageCache.shared.set(img, forKey: url.absoluteString)
                         }
                     }
                 }
                 if let url = article.authorProfileImage {
                     group.addTask {
                         if let (data, _) = try? await session.data(from: url), let img = UIImage(data: data) {
-                            ImageCache.shared.set(img, forKey: url.absoluteString)
+                            await ImageCache.shared.set(img, forKey: url.absoluteString)
                         }
                     }
                 }

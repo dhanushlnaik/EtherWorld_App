@@ -5,7 +5,7 @@ enum Configuration {
         case missingKey, invalidValue
     }
 
-    static func value<T>(for key: String) throws -> T where T: LosslessStringConvertible {
+    nonisolated static func value<T>(for key: String) throws -> T where T: LosslessStringConvertible {
         guard let object = Bundle.main.object(forInfoDictionaryKey: key) else {
             throw Error.missingKey
         }
@@ -35,20 +35,20 @@ enum Configuration {
 }
 
 extension Configuration {
-    static var ghostAPIKey: String {
+    nonisolated static var ghostAPIKey: String {
         return (try? value(for: "GhostAPIKey")) ?? "5b9aefe2ea7623b8fd81c52dec"
     }
 
-    static var ghostBaseURL: String {
+    nonisolated static var ghostBaseURL: String {
         return (try? value(for: "GhostBaseURL")) ?? "https://etherworld.co"
     }
 
-    static var supabaseURL: String {
+    nonisolated static var supabaseURL: String {
         // Intentionally no in-code default. Provide via Info.plist/build settings.
         return (try? value(for: "SupabaseURL")) ?? ""
     }
 
-    static var supabaseAnonKey: String {
+    nonisolated static var supabaseAnonKey: String {
         // Intentionally no in-code default. Provide via Info.plist/build settings.
         return (try? value(for: "SupabaseAnonKey")) ?? ""
     }

@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 import UIKit
+import Combine
 
 struct ArticleDetailView: View {
     let article: Article

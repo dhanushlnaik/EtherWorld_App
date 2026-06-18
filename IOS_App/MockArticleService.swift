@@ -1,6 +1,8 @@
 import Foundation
 
 struct MockArticleService: ArticleService {
+    nonisolated init() {}
+    
     func fetchArticles() async throws -> [Article] {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 1_000_000_000)

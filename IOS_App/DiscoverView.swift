@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct DiscoverView: View {
     @StateObject private var discoverViewModel = ArticleViewModel()
@@ -557,3 +558,4 @@ struct AuthorResult {
 #Preview {
     DiscoverView()
 }
+

@@ -57,7 +57,7 @@ struct GhostArticleService: PaginatedArticleService {
     private let apiKey: String
     private let session: URLSession
     
-    init(baseURL: String = Configuration.ghostBaseURL, apiKey: String = Configuration.ghostAPIKey) {
+    nonisolated init(baseURL: String = Configuration.ghostBaseURL, apiKey: String = Configuration.ghostAPIKey) {
         self.baseURL = baseURL
         self.apiKey = apiKey
         let config = URLSessionConfiguration.default

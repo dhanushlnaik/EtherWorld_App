@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 struct ReadingDayLog: Codable, Identifiable, Hashable {
     var id: String { dayKey }
@@ -352,3 +353,4 @@ struct ReadingStatsView: View {
         ReadingStatsView()
     }
 }
+

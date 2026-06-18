@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 struct ArticleHighlight: Identifiable, Codable, Hashable {
     let id: UUID
@@ -293,3 +294,4 @@ private struct FilterChip: View {
         .buttonStyle(.plain)
     }
 }
+

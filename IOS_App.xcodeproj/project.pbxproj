@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9598FF2F0B6C40007FF60C /* Localizable.strings */; };
 		FEFA00012FABCDEF00000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10012FABCDEF00000001 /* FirebaseAuth */; };
 		FEFA00022FABCDEF00000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEFA10022FABCDEF00000002 /* FirebaseCore */; };
 /* End PBXBuildFile section */
@@ -30,10 +29,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		FE9596F92F0B6C3F007FF60C /* IOS_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = IOS_App.app; path = EtherWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppTests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = IOS_AppUITests.xctest; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE9598FF2F0B6C40007FF60C /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = IOS_App/en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FE9596F92F0B6C3F007FF60C /* EtherWorld.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EtherWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9597082F0B6C40007FF60C /* EtherWorld.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE9597122F0B6C40007FF60C /* EtherWorld.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EtherWorld.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -81,14 +79,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		FE2A57902F2B7B24007A7EBC /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				FE9598FF2F0B6C40007FF60C /* Localizable.strings */,
-			);
-			name = "Recovered References";
-			sourceTree = "<group>";
-		};
 		FE9596F02F0B6C3F007FF60C = {
 			isa = PBXGroup;
 			children = (
@@ -96,16 +86,15 @@
 				FE95970B2F0B6C40007FF60C /* IOS_AppTests */,
 				FE9597152F0B6C40007FF60C /* IOS_AppUITests */,
 				FE9596FA2F0B6C3F007FF60C /* Products */,
-				FE2A57902F2B7B24007A7EBC /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
 		FE9596FA2F0B6C3F007FF60C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE9596F92F0B6C3F007FF60C /* IOS_App.app */,
-				FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */,
-				FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */,
+				FE9596F92F0B6C3F007FF60C /* EtherWorld.app */,
+				FE9597082F0B6C40007FF60C /* EtherWorld.xctest */,
+				FE9597122F0B6C40007FF60C /* EtherWorld.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,7 +119,7 @@
 			);
 			name = IOS_App;
 			productName = IOS_App;
-			productReference = FE9596F92F0B6C3F007FF60C /* IOS_App.app */;
+			productReference = FE9596F92F0B6C3F007FF60C /* EtherWorld.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FE9597072F0B6C40007FF60C /* IOS_AppTests */ = {
@@ -151,7 +140,7 @@
 			);
 			name = IOS_AppTests;
 			productName = IOS_AppTests;
-			productReference = FE9597082F0B6C40007FF60C /* IOS_AppTests.xctest */;
+			productReference = FE9597082F0B6C40007FF60C /* EtherWorld.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		FE9597112F0B6C40007FF60C /* IOS_AppUITests */ = {
@@ -172,7 +161,7 @@
 			);
 			name = IOS_AppUITests;
 			productName = IOS_AppUITests;
-			productReference = FE9597122F0B6C40007FF60C /* IOS_AppUITests.xctest */;
+			productReference = FE9597122F0B6C40007FF60C /* EtherWorld.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -183,7 +172,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					FE9596F82F0B6C3F007FF60C = {
 						CreatedOnToolsVersion = 26.2;
@@ -227,7 +216,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE9599002F0B6C40007FF60C /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +331,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -399,6 +388,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -414,7 +404,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "IOS_App/IOS-App-Info.plist";
+				INFOPLIST_FILE = "IOS-App-Info.plist";
 				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = co.etherworld.refresh;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = etherworld;\n    CFBundleURLSchemes = (\n        etherworld,\n        com.googleusercontent.apps.792420110202-cn5pe92j0fjf94d4ee7lvlducjvk826m\n    );\n}";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -450,7 +440,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "IOS_App/IOS-App-Info.plist";
+				INFOPLIST_FILE = "IOS-App-Info.plist";
 				INFOPLIST_KEY_BGTaskSchedulerPermittedIdentifiers = co.etherworld.refresh;
 				INFOPLIST_KEY_CFBundleURLTypes = "{\n    CFBundleURLName = etherworld;\n    CFBundleURLSchemes = (\n        etherworld,\n        com.googleusercontent.apps.792420110202-cn5pe92j0fjf94d4ee7lvlducjvk826m\n    );\n}";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
