@@ -198,8 +198,8 @@ function initEmailTransporter() {
       const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
       transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT || 587,
-        secure: false,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true' || parseInt(process.env.SMTP_PORT || '587', 10) === 465,
         auth: smtpUser && smtpPass ? { user: smtpUser, pass: smtpPass } : undefined
       });
     } else {
