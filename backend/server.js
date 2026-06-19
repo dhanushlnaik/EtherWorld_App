@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const { createClient } = require('redis');
 const path = require('path');
 const https = require('https');
+const restRoutes = require('./routes/restRoutes');
 
 // Always load .env from the backend folder so the server
 // works whether started in ./backend or from the repo root.
@@ -63,6 +64,9 @@ validateEnvironment();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Rest compatibility routes replacing Supabase
+app.use('/rest/v1', restRoutes);
 
 // Redis storage (optional)
 let redisClient = null;
