@@ -38,51 +38,50 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         guard let url = url, image == nil, !isLoading else { return }
         isLoading = true
         
-        // Check memory cache first
+        // Check memory cache first (fast, MainActor)
         if let cached = ImageCache.shared.get(forKey: url.absoluteString) {
-            await MainActor.run {
-                self.image = cached
-            }
+            self.image = cached
             isLoading = false
             return
         }
         
-        // Check disk cache
-        if let diskCached = loadFromDiskSync(url: url) {
-            await MainActor.run {
-                self.image = diskCached
-                ImageCache.shared.set(diskCached, forKey: url.absoluteString)
-            }
-            isLoading = false
-            return
-        }
-        
-        // Download with URLSession that respects cache
-        let config = URLSessionConfiguration.default
-        config.urlCache = URLCache.shared
-        config.requestCachePolicy = .returnCacheDataElseLoad
-        let session = URLSession(configuration: config)
-        
-        do {
-            let (data, _) = try await session.data(from: url)
-            if let downloaded = UIImage(data: data) {
-                // Optimize size on background thread
-                let optimized = optimizeImageSync(downloaded)
-                await MainActor.run {
-                    self.image = optimized
-                    ImageCache.shared.set(optimized, forKey: url.absoluteString)
+        // Load and process image on a background thread
+        let resultImage = await Task.detached(priority: .userInitiated) { () -> UIImage? in
+            // Check disk cache
+            if let diskCached = Self.loadFromDiskSync(url: url) {
+                // Save to memory cache asynchronously
+                Task { @MainActor in
+                    ImageCache.shared.set(diskCached, forKey: url.absoluteString)
                 }
-                Task.detached {
-                    await self.saveToDiskAsync(image: optimized, url: url)
-                }
+                return diskCached
             }
-        } catch {
-            // Fail silently
+            
+            // Download from network using shared connection pool
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                if let downloaded = UIImage(data: data) {
+                    let optimized = Self.optimizeImageSync(downloaded)
+                    // Cache to disk
+                    Self.saveToDiskSync(image: optimized, url: url)
+                    // Cache to memory
+                    Task { @MainActor in
+                        ImageCache.shared.set(optimized, forKey: url.absoluteString)
+                    }
+                    return optimized
+                }
+            } catch {
+                // Fail silently
+            }
+            return nil
+        }.value
+        
+        if let resultImage = resultImage {
+            self.image = resultImage
         }
         isLoading = false
     }
     
-    private func loadFromDiskSync(url: URL) -> UIImage? {
+    private static func loadFromDiskSync(url: URL) -> UIImage? {
         let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let fileName = url.absoluteString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? UUID().uuidString
         let fileURL = cacheDir.appendingPathComponent("images").appendingPathComponent(fileName)
@@ -94,7 +93,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         return image
     }
     
-    private func saveToDiskAsync(image: UIImage, url: URL) async {
+    private static func saveToDiskSync(image: UIImage, url: URL) {
         let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let imagesDir = cacheDir.appendingPathComponent("images")
         try? FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
@@ -106,7 +105,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         try? data.write(to: fileURL)
     }
     
-    private func optimizeImageSync(_ image: UIImage) -> UIImage {
+    private static func optimizeImageSync(_ image: UIImage) -> UIImage {
         let maxDimension: CGFloat = 1200
         let size = image.size
         

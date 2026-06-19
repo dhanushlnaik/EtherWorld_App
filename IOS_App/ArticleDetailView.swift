@@ -314,14 +314,22 @@ struct WebViewContainer: UIViewRepresentable {
                     line-height: 1.6; 
                     margin: 0; 
                     padding: 10px; 
-                    color: #e0e0e0; 
+                    color: #333333; 
                 }
                 img { max-width: 100%; height: auto; margin: 10px 0; }
-                a { color: #64B5F6; }
-                h1, h2, h3 { color: #ffffff; margin-top: 16px; }
+                a { color: #007AFF; }
+                h1, h2, h3 { color: #000000; margin-top: 16px; }
                 p { margin: 10px 0; }
-                strong { color: #f0f0f0; }
-                em { color: #e0e0e0; }
+                strong { color: #111111; }
+                em { color: #333333; }
+
+                @media (prefers-color-scheme: dark) {
+                    body { color: #e0e0e0; }
+                    a { color: #64B5F6; }
+                    h1, h2, h3 { color: #ffffff; }
+                    strong { color: #f0f0f0; }
+                    em { color: #e0e0e0; }
+                }
             </style>
             <script>
                 function sendHeight() {
@@ -470,12 +478,18 @@ struct HTMLContentView: UIViewRepresentable {
                     line-height: 1.6; 
                     margin: 0; 
                     padding: 10px; 
-                    color: #333; 
+                    color: #333333; 
                 }
                 img { max-width: 100%; height: auto; margin: 10px 0; }
                 a { color: #007AFF; }
-                h1, h2, h3 { color: #000; margin-top: 16px; }
+                h1, h2, h3 { color: #000000; margin-top: 16px; }
                 p { margin: 10px 0; }
+
+                @media (prefers-color-scheme: dark) {
+                    body { color: #e0e0e0; }
+                    a { color: #64B5F6; }
+                    h1, h2, h3 { color: #ffffff; }
+                }
             </style>
             <script>
                 window.addEventListener('load', function() {
