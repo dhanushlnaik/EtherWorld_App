@@ -339,6 +339,15 @@ app.post('/auth/send-otp', async (req, res) => {
       return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
     }
 
+    // Bypass for Apple Reviewer / Testing accounts
+    if (emailLower === 'test@etherworld.co' || emailLower === 'apple-reviewer@etherworld.co') {
+      const mockOtp = '123456';
+      const hashed = hashOTP(mockOtp);
+      await storeOTP(emailLower, hashed);
+      console.log(`🔒 MOCK OTP generated for reviewer (${emailLower}): ${mockOtp}`);
+      return res.json({ message: 'Verification code sent successfully (Review Mode)' });
+    }
+
     const fromAddress = resolveFromAddress();
     if (!fromAddress && (process.env.SMTP_HOST || process.env.EMAIL_SERVICE === 'gmail' || process.env.SENDGRID_API_KEY)) {
       const configErr = 'Email misconfigured: missing sender address (SENDGRID_FROM_EMAIL or EMAIL_FROM)';
