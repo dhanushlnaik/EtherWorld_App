@@ -19,6 +19,9 @@ final class AuthenticationManager: ObservableObject {
     // For Apple Sign-In nonce
     private var currentNonce: String?
     
+    // Retain active OAuthProvider to prevent premature ARC deallocation during async flows
+    private var activeOAuthProvider: OAuthProvider?
+    
     struct User: Codable {
         let id: String
         let email: String
@@ -297,10 +300,14 @@ final class AuthenticationManager: ObservableObject {
         do {
             let provider = OAuthProvider(providerID: "google.com")
             provider.scopes = ["email", "profile"]
+            
+            // Retain the provider instance
+            self.activeOAuthProvider = provider
 
             // Bridge the callback-based API to async/await
             let credential = try await withCheckedThrowingContinuation { continuation in
-                provider.getCredentialWith(nil) { credential, error in
+                provider.getCredentialWith(nil) { [weak self] credential, error in
+                    self?.activeOAuthProvider = nil // Release the provider
                     if let credential {
                         continuation.resume(returning: credential)
                     } else {
