@@ -42,5 +42,13 @@
 		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
+	<key>GhostAPIKey</key>
+	<string>$(GHOST_API_KEY)</string>
+	<key>GhostBaseURL</key>
+	<string>$(GHOST_BASE_URL)</string>
+	<key>SupabaseURL</key>
+	<string>$(SUPABASE_URL)</string>
+	<key>SupabaseAnonKey</key>
+	<string>$(SUPABASE_ANON_KEY)</string>
 </dict>
 </plist>
