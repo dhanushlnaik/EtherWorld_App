@@ -101,9 +101,9 @@ function resolveFromAddress() {
     if (match) addr = match[1];
   }
 
-  // Gmail: EMAIL_USER is typically an actual email address.
-  if (!addr && process.env.EMAIL_SERVICE === 'gmail' && process.env.EMAIL_USER) {
-    addr = process.env.EMAIL_USER;
+  // Gmail or SMTP fallback: use SMTP_USER/EMAIL_USER if no explicit from address is configured
+  if (!addr && (process.env.EMAIL_SERVICE === 'gmail' || process.env.SMTP_HOST)) {
+    addr = process.env.SMTP_USER || process.env.EMAIL_USER;
   }
 
   return addr || null;
